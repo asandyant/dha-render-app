@@ -1,0 +1,49 @@
+<%- include('partials/header', { title: 'Crew Sign', heading: 'Crew Signature Page', subheading: (dha.projectName || 'DHA') + ' · ' + (dha.date || '') }) %>
+
+<div class="grid two">
+  <div class="card">
+    <h2 style="margin-top:0;">Before signing</h2>
+    <p><strong>Project</strong><br><span class="muted"><%= dha.projectName || '—' %></span></p>
+    <p><strong>Foreman</strong><br><span class="muted"><%= dha.foreman || '—' %></span></p>
+    <p><strong>Task</strong><br><span class="muted"><%= dha.taskDescription || '—' %></span></p>
+    <p><strong>Main hazards</strong><br><span class="muted"><%= summaries.hazardText || '—' %></span></p>
+    <p><strong>Main controls</strong><br><span class="muted"><%= summaries.controlText || '—' %></span></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;">Sign this DHA</h2>
+    <% if (error) { %><div class="alert"><%= error %></div><% } %>
+    <form method="POST" action="/sign/<%= dha.signToken %>">
+      <div class="grid two">
+        <div>
+          <label>Your name</label>
+          <input type="text" name="signerName" required />
+        </div>
+        <div>
+          <label>Role</label>
+          <select name="role">
+            <option value="Crew Member">Crew Member</option>
+            <option value="Operator">Operator</option>
+            <option value="Laborer">Laborer</option>
+            <option value="Foreman">Foreman</option>
+            <option value="Superintendent">Superintendent</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Signature</label>
+        <canvas id="signature-pad" class="signature-pad"></canvas>
+        <input type="hidden" id="signatureData" name="signatureData" />
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn ghost" type="button" id="clear-signature">Clear signature</button>
+          <button class="btn secondary" type="submit">Submit signature</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@5.1.0/dist/signature_pad.umd.min.js"></script>
+<script src="/js/signature.js"></script>
+
+<%- include('partials/footer') %>

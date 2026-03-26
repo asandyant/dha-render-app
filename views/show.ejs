@@ -1,0 +1,96 @@
+<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Share the QR code so the crew can sign from their phones.' }) %>
+
+<div class="grid two">
+  <div class="card">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+      <span class="badge <%= dha.status === 'completed' ? '' : 'open' %>"><%= dha.status %></span>
+      <span class="small muted">Created <%= new Date(dha.createdAt).toLocaleString() %></span>
+    </div>
+    <h2 style="margin-top:0;">Project summary</h2>
+    <div class="grid two">
+      <div><strong>Project #</strong><br><span class="muted"><%= dha.projectNumber || '—' %></span></div>
+      <div><strong>Date / Time</strong><br><span class="muted"><%= dha.date || '—' %> <%= dha.time || '' %></span></div>
+      <div><strong>Superintendent</strong><br><span class="muted"><%= dha.superintendent || '—' %></span></div>
+      <div><strong>Foreman</strong><br><span class="muted"><%= dha.foreman || '—' %></span></div>
+      <div><strong>Weather</strong><br><span class="muted"><%= dha.weather || '—' %></span></div>
+      <div><strong>Location</strong><br><span class="muted"><%= dha.workAreaLocation || '—' %></span></div>
+    </div>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;" />
+    <p><strong>Task description</strong><br><span class="muted"><%= dha.taskDescription || '—' %></span></p>
+    <p><strong>Main hazards</strong><br><span class="muted"><%= summaries.hazardText || '—' %></span></p>
+    <p><strong>Main controls</strong><br><span class="muted"><%= summaries.controlText || '—' %></span></p>
+  </div>
+
+  <div class="card qr">
+    <h2 style="margin-top:0;">Crew sign QR code</h2>
+    <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" style="width:240px;max-width:100%;border-radius:12px;border:1px solid #dbe3ee;" />
+    <p class="muted" style="margin:0;">Workers scan this and sign from their phones.</p>
+    <a class="btn secondary" href="<%= signUrl %>">Open sign page</a>
+    <div class="card" style="width:100%;margin:0; padding:12px; background:#f8fafc;">
+      <div class="small muted" style="word-break:break-all;"><%= signUrl %></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;">Permits and training</h2>
+  <div class="grid two">
+    <div>
+      <strong>Permits</strong>
+      <p class="muted"><%= dha.permits.length ? dha.permits.join(', ') : 'None selected' %></p>
+      <% if (dha.permitsOther) { %><p class="small muted">Other: <%= dha.permitsOther %></p><% } %>
+    </div>
+    <div>
+      <strong>Training</strong>
+      <p class="muted"><%= dha.training.length ? dha.training.join(', ') : 'None selected' %></p>
+      <% if (dha.trainingOther) { %><p class="small muted">Other: <%= dha.trainingOther %></p><% } %>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;">Task rows</h2>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Task step</th><th>Hazard</th><th>Control</th></tr></thead>
+      <tbody>
+      <% dha.taskRows.forEach(function(row) { %>
+        <tr>
+          <td><%= row.taskStep || '—' %></td>
+          <td><%= row.hazard || '—' %></td>
+          <td><%= row.control || '—' %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="topbar">
+    <h2 style="margin:0;">Crew signatures (<%= dha.crewSignatures.length %>)</h2>
+    <% if (dha.status !== 'completed') { %>
+      <form method="POST" action="/dhas/<%= dha.id %>/close">
+        <button class="btn danger" type="submit">Mark complete</button>
+      </form>
+    <% } %>
+  </div>
+  <div class="list" style="margin-top:12px;">
+    <% if (!dha.crewSignatures.length) { %>
+      <div class="row-card"><p class="muted" style="margin:0;">No signatures yet.</p></div>
+    <% } %>
+    <% dha.crewSignatures.forEach(function(sig) { %>
+      <div class="row-card">
+        <div class="topbar">
+          <div>
+            <strong><%= sig.signerName %></strong>
+            <div class="small muted"><%= sig.role %> · <%= new Date(sig.signedAt).toLocaleString() %></div>
+          </div>
+        </div>
+        <img src="<%= sig.signatureData %>" alt="Signature for <%= sig.signerName %>" style="margin-top:12px; max-width:260px; width:100%; background:#fff; border:1px solid #dbe3ee; border-radius:12px;" />
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

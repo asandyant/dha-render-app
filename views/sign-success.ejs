@@ -1,0 +1,9 @@
+<%- include('partials/header', { title: 'Signature Saved', heading: 'Signature saved', subheading: 'Thanks — your DHA signature was recorded.' }) %>
+
+<div class="card" style="text-align:center;">
+  <h2>Thanks, <%= signerName %>.</h2>
+  <p class="muted">Your signature has been attached to <strong><%= dha.projectName || 'today’s DHA' %></strong>.</p>
+  <a class="btn secondary" href="/sign/<%= dha.signToken %>">Add another signer</a>
+</div>
+
+<%- include('partials/footer') %>

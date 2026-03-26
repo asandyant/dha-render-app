@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'DHA Dashboard', heading: 'DHA Dashboard', subheading: 'Open, review, and share daily hazard analyses.' }) %>
+
+<div class="card">
+  <div class="topbar">
+    <div>
+      <h2 style="margin:0 0 6px 0;">Recent DHAs</h2>
+      <p class="muted">Each DHA gets a crew sign page and QR code after creation.</p>
+    </div>
+    <a class="btn secondary" href="/foreman/new">Create today’s DHA</a>
+  </div>
+</div>
+
+<div class="list">
+  <% if (!dhas.length) { %>
+    <div class="card">
+      <p style="margin:0 0 10px 0; font-weight:700;">No DHAs yet.</p>
+      <p class="muted">Start with the foreman form, then let the crew scan the QR code to sign.</p>
+    </div>
+  <% } %>
+
+  <% dhas.forEach(function(dha) { %>
+    <div class="row-card">
+      <div class="topbar">
+        <div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:6px;">
+            <span class="badge <%= dha.status === 'completed' ? '' : 'open' %>"><%= dha.status %></span>
+            <span class="small muted"><%= new Date(dha.createdAt).toLocaleString() %></span>
+          </div>
+          <h3 style="margin:0 0 6px 0;"><%= dha.projectName || 'Untitled Project' %></h3>
+          <p class="muted" style="margin:0;">Project #<%= dha.projectNumber || '—' %> · Foreman: <%= dha.foreman || '—' %> · Date: <%= dha.date || '—' %></p>
+        </div>
+        <div class="actions">
+          <a class="btn" href="/dhas/<%= dha.id %>">Open</a>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

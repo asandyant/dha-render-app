@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="header">
+    <div class="container" style="margin:0 auto;">
+      <div class="topbar">
+        <div>
+          <h1><%= heading %></h1>
+          <% if (subheading) { %><p class="muted" style="color:#cbd5e1;margin-top:6px;"><%= subheading %></p><% } %>
+        </div>
+        <div class="actions">
+          <a class="btn ghost" href="/dashboard">Dashboard</a>
+          <a class="btn secondary" href="/foreman/new">New DHA</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
