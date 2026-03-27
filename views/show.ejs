@@ -13,11 +13,6 @@
       <div class="actions" style="margin-top:18px;">
         <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh Signatures</a>
         <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf">Save as PDF</a>
-        <% if (dha.status !== 'completed') { %>
-          <form method="POST" action="/dhas/<%= dha.id %>/close" style="display:inline;">
-            <button class="btn primary" type="submit">Mark Complete</button>
-          </form>
-        <% } %>
       </div>
     </div>
 
