@@ -14,8 +14,12 @@
         <% if (subheading) { %><div class="brand-sub"><%= subheading %></div><% } %>
       </div>
       <div class="actions">
-        <a class="btn secondary" href="/dashboard">Dashboard</a>
-        <a class="btn primary" href="/foreman/start-today">Start Today's DHA</a>
+        <% if (typeof showDashboard === 'undefined' || showDashboard) { %>
+          <a class="btn secondary" href="/dashboard">Dashboard</a>
+        <% } %>
+        <% if (typeof showStart === 'undefined' || showStart) { %>
+          <a class="btn primary" href="/foreman/start-today">Start Today's DHA</a>
+        <% } %>
       </div>
     </div>
   </header>

@@ -1,21 +1,19 @@
-<%- include('partials/header', { title: "DHA Dashboard", heading: "RK19-A", subheading: "Open the link, press Start Today’s DHA, and let the crew scan the QR code to sign." }) %>
+<%- include('partials/header', { title: "DHA Dashboard", heading: "RK19-A", subheading: "Office view for recent DHAs.", showDashboard: false, showStart: true }) %>
 
 <div class="card no-print hero-card">
   <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;">
     <div>
-      <div style="font-size:28px;font-weight:800;">Start Today's DHA</div>
-      <div class="muted" style="margin-top:6px;max-width:760px;">This creates today's Safespan DHA with your saved defaults, shows the QR code right away, and lets Shane watch the signatures come in on one page.</div>
+      <div style="font-size:28px;font-weight:800;">Recent DHAs</div>
+      <div class="muted" style="margin-top:6px;max-width:760px;">Shane does not need this page in the field. This is mainly here for office review and re-opening saved DHAs.</div>
       <div class="small muted" style="margin-top:8px;">Date: <strong><%= todayDate %></strong></div>
     </div>
     <div class="actions">
       <a class="btn primary" href="/foreman/start-today">Start Today's DHA</a>
-      <a class="btn secondary" href="/foreman/new">Edit Template</a>
     </div>
   </div>
 </div>
 
 <div class="card no-print">
-  <div style="font-size:22px;font-weight:800;margin-bottom:8px;">Recent DHAs</div>
   <% if (!dhas.length) { %>
     <div class="muted">No DHAs created yet.</div>
   <% } else { %>

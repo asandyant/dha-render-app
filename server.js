@@ -261,7 +261,7 @@ function findTodayDha(db) {
   return db.dhas.find((item) => item.date === today && item.projectName === defaultDhaTemplate.projectName && item.foreman === defaultDhaTemplate.foreman && item.status !== 'completed');
 }
 
-app.get('/', (req, res) => res.redirect('/dashboard'));
+app.get('/', (req, res) => res.redirect('/foreman/start-today'));
 
 app.get('/dashboard', (req, res) => {
   const db = readDb();
@@ -272,9 +272,20 @@ app.get('/dashboard', (req, res) => {
 app.get('/foreman/start-today', (req, res) => {
   const db = readDb();
   const existing = findTodayDha(db);
+  res.render('start-today', { existing });
+});
+
+app.post('/foreman/start-today', (req, res) => {
+  const db = readDb();
+  const existing = findTodayDha(db);
   if (existing) return res.redirect(`/dhas/${existing.id}`);
 
-  const dha = createDhaRecord();
+  const payload = {
+    weather: req.body.weather || '',
+    workAreaLocation: req.body.workAreaLocation || defaultDhaTemplate.workAreaLocation
+  };
+
+  const dha = createDhaRecord(payload);
   db.dhas.push(dha);
   writeDb(db);
   res.redirect(`/dhas/${dha.id}`);

@@ -226,3 +226,35 @@ label.field-label { display: block; font-weight: 700; margin-bottom: 6px; }
 
 .qr-panel { min-width: 280px; max-width: 320px; text-align: center; background: #f8fbff; border: 1px solid #d7dde8; border-radius: 18px; padding: 18px; }
 .qr-image { width: 220px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; padding: 10px; }
+
+
+.hero-card {
+  padding: 28px;
+}
+.start-panel {
+  width: min(420px, 100%);
+  margin: 18px auto 4px;
+  text-align: center;
+}
+.big-start {
+  min-height: 64px;
+  width: 100%;
+  font-size: 24px;
+  border-radius: 18px;
+}
+.notice {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+@media (max-width: 800px) {
+  .hero-card {
+    padding: 20px;
+  }
+  .big-start {
+    font-size: 20px;
+  }
+}

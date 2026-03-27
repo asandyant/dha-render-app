@@ -1,0 +1,79 @@
+<%- include('partials/header', { title: "Start Today's DHA", heading: "RK19-A", subheading: "Shane starts the day here. Tap Start Today's DHA, show the QR code, collect signatures, then save the finished DHA as a PDF.", showDashboard: false, showStart: false }) %>
+
+<div class="card no-print hero-card">
+  <div style="max-width:800px;">
+    <div style="font-size:34px;font-weight:800;margin-bottom:8px;">Today's Safespan DHA</div>
+    <div class="muted" style="font-size:20px;line-height:1.4;">Tap one button to create today's DHA with your saved Safespan defaults. After that, the QR code and the full DHA form will appear on the next page for the crew to sign.</div>
+    <% if (existing) { %>
+      <div class="notice" style="margin-top:16px;">A DHA already exists for today. You can open it instead of starting a new one.</div>
+    <% } %>
+  </div>
+
+  <div class="start-panel">
+    <form method="POST" action="/foreman/start-today" id="startTodayForm">
+      <input type="hidden" name="weather" id="weatherInput" value="">
+      <input type="hidden" name="workAreaLocation" id="workAreaLocationInput" value="">
+      <button class="btn primary big-start" type="submit" id="startBtn">Start Today's DHA</button>
+    </form>
+    <% if (existing) { %>
+      <div class="actions" style="margin-top:14px;justify-content:center;">
+        <a class="btn secondary" href="/dhas/<%= existing.id %>">Open Today's DHA</a>
+      </div>
+    <% } %>
+    <div class="small muted" id="weatherStatus" style="margin-top:12px;text-align:center;">Getting weather for today's form…</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const weatherInput = document.getElementById('weatherInput');
+  const areaInput = document.getElementById('workAreaLocationInput');
+  const weatherStatus = document.getElementById('weatherStatus');
+
+  function setStatus(message) {
+    if (weatherStatus) weatherStatus.textContent = message;
+  }
+
+  async function loadWeather(lat, lon) {
+    try {
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph`);
+      const weatherData = await weatherRes.json();
+      const current = weatherData.current || {};
+      const temp = current.temperature_2m;
+      const wind = current.wind_speed_10m;
+      const code = current.weather_code;
+      const codeMap = {
+        0: 'clear', 1: 'mostly clear', 2: 'partly cloudy', 3: 'overcast',
+        45: 'fog', 48: 'fog', 51: 'light drizzle', 53: 'drizzle', 55: 'heavy drizzle',
+        61: 'light rain', 63: 'rain', 65: 'heavy rain', 71: 'light snow', 73: 'snow',
+        75: 'heavy snow', 80: 'rain showers', 81: 'rain showers', 82: 'heavy showers',
+        95: 'thunderstorms'
+      };
+      const desc = codeMap[code] || 'site weather';
+      weatherInput.value = `${desc} / ${Math.round(temp || 0)}°F / wind ${Math.round(wind || 0)} mph`;
+      setStatus(`Weather ready: ${weatherInput.value}`);
+    } catch (err) {
+      setStatus('Weather could not be loaded automatically. The DHA will still start.');
+    }
+  }
+
+  function loadLocationAndWeather() {
+    if (!navigator.geolocation) {
+      setStatus('Weather autofill not available on this device.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async function (position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      areaInput.value = `Bridge work area / Safespan access area (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+      await loadWeather(lat, lon);
+    }, function () {
+      setStatus('Location permission not allowed. Weather will stay blank unless edited later.');
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 });
+  }
+
+  loadLocationAndWeather();
+})();
+</script>
+
+<%- include('partials/footer') %>

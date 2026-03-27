@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: "Today's DHA", heading: "RK19-A", subheading: "Start today, show the QR code, watch signatures come in, then save the finished DHA as a PDF." }) %>
+<%- include('partials/header', { title: "Today's DHA", heading: "RK19-A", subheading: "Show the QR code, watch signatures come in, then save the finished DHA as a PDF.", showDashboard: false, showStart: false }) %>
 
 <div class="card no-print">
   <div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;">
@@ -8,7 +8,7 @@
         <span class="count-pill"><%= progress.progressText %></span>
       </div>
       <div style="font-size:30px;font-weight:800;">Today's Safespan DHA</div>
-      <div class="muted" style="margin-top:8px;max-width:760px;">Shane can stay on this page while the crew signs. Each worker signature drops into the crew sign-in section on the DHA form below.</div>
+      <div class="muted" style="margin-top:8px;max-width:760px;">Shane stays on this page while the crew signs. Each worker signature drops into the crew sign-in section on the DHA form below.</div>
 
       <div class="actions" style="margin-top:18px;">
         <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh Signatures</a>
