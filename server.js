@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || '';
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
-const DEFAULT_CREW_COUNT = 9;
+const DEFAULT_CREW_COUNT = 12;
 
 const permitOptions = [
   'Confined Space',
@@ -249,12 +249,10 @@ function createDhaRecord(payload = {}) {
 
 function getSignatureProgress(dha) {
   const signedCount = (dha.crewSignatures || []).length;
-  const expectedCrewCount = Number(dha.expectedCrewCount) || DEFAULT_CREW_COUNT;
   return {
     signedCount,
-    expectedCrewCount,
-    progressText: `${signedCount} of ${expectedCrewCount} workers signed`,
-    allSigned: signedCount >= expectedCrewCount
+    progressText: `${signedCount} worker${signedCount === 1 ? '' : 's'} signed`,
+    allSigned: false
   };
 }
 
@@ -268,7 +266,7 @@ app.get('/', (req, res) => res.redirect('/dashboard'));
 app.get('/dashboard', (req, res) => {
   const db = readDb();
   const dhas = [...db.dhas].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.render('dashboard', { dhas, todayDate: getTodayDateString(), defaultCrewCount: DEFAULT_CREW_COUNT });
+  res.render('dashboard', { dhas, todayDate: getTodayDateString() });
 });
 
 app.get('/foreman/start-today', (req, res) => {
@@ -284,7 +282,7 @@ app.get('/foreman/start-today', (req, res) => {
 
 app.get('/foreman/new', (req, res) => {
   const defaults = makeDefaultDha();
-  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults, defaultCrewCount: DEFAULT_CREW_COUNT });
+  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults });
 });
 
 app.post('/foreman/new', (req, res) => {
@@ -388,10 +386,6 @@ app.post('/sign/:token', (req, res) => {
   });
 
   const updatedProgress = getSignatureProgress(dha);
-  if (updatedProgress.allSigned && dha.status !== 'completed') {
-    dha.status = 'completed';
-    dha.closedAt = new Date().toISOString();
-  }
 
   writeDb(db);
   res.render('sign-success', { dha, signerName, progress: updatedProgress });

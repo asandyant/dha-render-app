@@ -1,57 +1,48 @@
-<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Paper-style DHA view with QR crew sign page, live sign count, and PDF save option.' }) %>
+<%- include('partials/header', { title: 'Today's DHA', heading: 'RK19-A', subheading: 'Start today, show the QR code, watch signatures come in, then save the finished DHA as a PDF.' }) %>
 
 <div class="card no-print">
-  <div class="topbar">
-    <div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+  <div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;">
+    <div style="flex:1;min-width:280px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
         <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
         <span class="count-pill"><%= progress.progressText %></span>
-        <span class="small muted">Created <%= new Date(dha.createdAt).toLocaleString() %></span>
       </div>
-      <div style="font-size:24px;font-weight:800;">Today's Safespan DHA</div>
-      <div class="muted">Shane can use this one page to review the sheet, show the QR code, watch the signature count update, and save the finished record as a PDF.</div>
-    </div>
-    <div class="actions">
-      <a class="btn secondary" href="<%= signUrl %>">Open worker sign page</a>
-      <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf">Save as PDF</a>
-      <button class="btn primary" onclick="window.print()" type="button">Print</button>
-      <% if (dha.status !== 'completed') { %>
-        <form method="POST" action="/dhas/<%= dha.id %>/close" style="display:inline;">
-          <button class="btn danger" type="submit">Mark complete</button>
-        </form>
-      <% } %>
-    </div>
-  </div>
-</div>
+      <div style="font-size:30px;font-weight:800;">Today's Safespan DHA</div>
+      <div class="muted" style="margin-top:8px;max-width:760px;">Shane can stay on this page while the crew signs. Each worker signature drops into the crew sign-in section on the DHA form below.</div>
 
-<div class="card no-print">
-  <div class="topbar" style="align-items:flex-start;">
-    <div style="flex:1;min-width:260px;">
+      <div class="actions" style="margin-top:18px;">
+        <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh Signatures</a>
+        <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf">Save as PDF</a>
+        <% if (dha.status !== 'completed') { %>
+          <form method="POST" action="/dhas/<%= dha.id %>/close" style="display:inline;">
+            <button class="btn primary" type="submit">Mark Complete</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="qr-panel">
       <div style="font-size:20px;font-weight:800;margin-bottom:8px;">Crew sign QR code</div>
-      <div class="muted">Workers scan this on their phones, type their names, sign with a finger, and their signatures drop into the crew sign-in area below.</div>
-      <div style="margin-top:12px;word-break:break-all;" class="small"><strong>Worker sign link:</strong> <%= signUrl %></div>
-      <div class="topbar" style="justify-content:flex-start;margin-top:12px;">
-        <button class="btn secondary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= signUrl %>')">Copy sign link</button>
-        <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh count</a>
+      <div class="muted" style="margin-bottom:10px;">Workers scan this, type their names, sign with a finger, and their signatures go into the DHA below.</div>
+      <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" class="qr-image">
+      <div class="small muted" style="margin-top:10px;word-break:break-all;"><strong>Sign link:</strong> <%= signUrl %></div>
+      <div class="actions" style="margin-top:12px;justify-content:center;">
+        <button class="btn secondary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= signUrl %>')">Copy Sign Link</button>
       </div>
-    </div>
-    <div style="text-align:center;min-width:240px;">
-      <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" style="width:220px;max-width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:10px;">
-      <div class="small muted" style="margin-top:8px;"><%= progress.progressText %></div>
     </div>
   </div>
 </div>
 
 <div class="card no-print">
-  <div class="topbar" style="align-items:flex-start;">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
     <div>
-      <div style="font-size:20px;font-weight:800;margin-bottom:8px;">Signed worker list</div>
-      <div class="muted">Use this to confirm who is already on the DHA before work starts.</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:8px;">Signed worker list</div>
+      <div class="muted">This updates as the crew signs. There is no fixed cap, so it just keeps counting signed workers.</div>
     </div>
     <div class="count-pill"><%= progress.progressText %></div>
   </div>
   <% if (!(dha.crewSignatures || []).length) { %>
-    <div class="muted">No workers have signed yet.</div>
+    <div class="muted" style="margin-top:12px;">No workers have signed yet.</div>
   <% } else { %>
     <div class="signed-list">
       <% (dha.crewSignatures || []).forEach(function(signature, index) { %>

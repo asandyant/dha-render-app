@@ -222,3 +222,7 @@ label.field-label { display: block; font-weight: 700; margin-bottom: 6px; }
 @media (max-width: 900px) {
   .checks-grid { grid-template-columns: 1fr; }
 }
+
+
+.qr-panel { min-width: 280px; max-width: 320px; text-align: center; background: #f8fbff; border: 1px solid #d7dde8; border-radius: 18px; padding: 18px; }
+.qr-image { width: 220px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; padding: 10px; }
