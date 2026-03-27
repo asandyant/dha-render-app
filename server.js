@@ -6,8 +6,9 @@ const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.BASE_URL || '';
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
+const DEFAULT_CREW_COUNT = 9;
 
 const permitOptions = [
   'Confined Space',
@@ -50,21 +51,35 @@ const hazardExamples = [
   'Entanglement', 'Improper Use of Hand / Power Tools', 'Changing Weather / Environment'
 ];
 
+const controlExamples = [
+  'Associated Permit(s)', 'Housekeeping', 'Shields / Sloping / Etc.',
+  'Communication / Coordination', 'Hearing Protection', 'Signage / Barricades',
+  'Controlled Access / Egress', 'Lock Out / Tag Out', 'Spotter / Fire Watch',
+  'Environmental / BMP’s', 'Lighting', 'Stretch and Flex',
+  'Equipment Inspection', 'PPE', 'Tag Lines',
+  'Equipment Guards', 'PFD(s) / Life Rings / Skiff', 'Tool Inspection',
+  'Fall Protection', 'Proper Lifting Techniques', 'Tool Tethering',
+  'Fire Extinguisher', 'Secured / Stored Cylinders', 'Whip Checks'
+];
 
 const defaultDhaTemplate = {
   projectName: 'RK19-A',
+  projectNumber: '',
   superintendent: 'Anthony Lovich',
   foreman: 'Shane Young',
   weather: '',
+  workAreaLocation: 'Bridge work area / Safespan access area',
   workAreaSurveyed: 'Yes',
   jhaReviewed: 'Yes',
   taskDescription: 'Safespan installation',
-  othersWorking: 'N/A',
-  coordinatedWithOthers: 'N/A',
+  othersWorking: 'Yes',
+  coordinatedWithOthers: 'Yes',
   incidentsOrNearMisses: 'No',
+  incidentsExplanation: '',
+  expectedCrewCount: DEFAULT_CREW_COUNT,
   toolsEquipment: 'Safespan components, chain falls, slings, shackles, spreader bars as needed, tag lines, swing stages, hand tools, impact guns, radios, harnesses, lanyards, hard hats, safety glasses, gloves, high-visibility vests, barricades, and required PPE.',
   permits: ['Tools / Equipment', 'Rigging'],
-  training: ['Flagging', 'Rigging / Signaling'],
+  training: ['Fall Protection', 'Flagging', 'Rigging / Signaling'],
   taskRows: [
     {
       taskStep: 'Hoisting Safespan pieces',
@@ -98,17 +113,6 @@ const defaultDhaTemplate = {
     }
   ]
 };
-
-const controlExamples = [
-  'Associated Permit(s)', 'Housekeeping', 'Shields / Sloping / Etc.',
-  'Communication / Coordination', 'Hearing Protection', 'Signage / Barricades',
-  'Controlled Access / Egress', 'Lock Out / Tag Out', 'Spotter / Fire Watch',
-  'Environmental / BMP’s', 'Lighting', 'Stretch and Flex',
-  'Equipment Inspection', 'PPE', 'Tag Lines',
-  'Equipment Guards', 'PFD(s) / Life Rings / Skiff', 'Tool Inspection',
-  'Fall Protection', 'Proper Lifting Techniques', 'Tool Tethering',
-  'Fire Extinguisher', 'Secured / Stored Cylinders', 'Whip Checks'
-];
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -174,28 +178,117 @@ function buildCrewGrid(signatures) {
   return { left, right };
 }
 
+function isRenderableBaseUrl(value) {
+  return value && !value.includes('localhost') && !value.includes('127.0.0.1');
+}
+
+function getBaseUrl(req) {
+  if (isRenderableBaseUrl(BASE_URL)) return BASE_URL.replace(/\/$/, '');
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.get('host');
+  return `${protocol}://${host}`;
+}
+
+function getTodayDateString() {
+  const now = new Date();
+  const offsetMs = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10);
+}
+
+function makeDefaultDha(overrides = {}) {
+  const now = new Date();
+  const defaults = {
+    ...defaultDhaTemplate,
+    date: getTodayDateString(),
+    time: now.toTimeString().slice(0, 5)
+  };
+  const baseRows = defaultDhaTemplate.taskRows.map((row) => ({ ...row }));
+  return {
+    ...defaults,
+    ...overrides,
+    taskRows: (overrides.taskRows || baseRows).map((row) => ({ ...row }))
+  };
+}
+
+function createDhaRecord(payload = {}) {
+  const template = makeDefaultDha(payload);
+  return {
+    id: uuidv4(),
+    signToken: uuidv4(),
+    projectName: template.projectName || '',
+    projectNumber: template.projectNumber || '',
+    date: template.date || '',
+    time: template.time || '',
+    superintendent: template.superintendent || '',
+    foreman: template.foreman || '',
+    weather: template.weather || '',
+    workAreaLocation: template.workAreaLocation || '',
+    workAreaSurveyed: template.workAreaSurveyed || 'N/A',
+    jhaReviewed: template.jhaReviewed || 'N/A',
+    taskDescription: template.taskDescription || '',
+    othersWorking: template.othersWorking || 'N/A',
+    coordinatedWithOthers: template.coordinatedWithOthers || 'N/A',
+    incidentsOrNearMisses: template.incidentsOrNearMisses || 'No',
+    incidentsExplanation: template.incidentsExplanation || '',
+    expectedCrewCount: Number(template.expectedCrewCount) || DEFAULT_CREW_COUNT,
+    toolsEquipment: template.toolsEquipment || '',
+    permits: normalizeArray(template.permits),
+    permitsOther: template.permitsOther || '',
+    training: normalizeArray(template.training),
+    trainingOther: template.trainingOther || '',
+    taskRows: template.taskRows || normalizeRows(template),
+    crewSignatures: template.crewSignatures || [],
+    foremanSignature: template.foremanSignature || '',
+    foremanSignatureName: template.foremanSignatureName || template.foreman || '',
+    reviewerSignature: template.reviewerSignature || '',
+    reviewerSignatureName: template.reviewerSignatureName || '',
+    createdAt: new Date().toISOString(),
+    status: template.status || 'open'
+  };
+}
+
+function getSignatureProgress(dha) {
+  const signedCount = (dha.crewSignatures || []).length;
+  const expectedCrewCount = Number(dha.expectedCrewCount) || DEFAULT_CREW_COUNT;
+  return {
+    signedCount,
+    expectedCrewCount,
+    progressText: `${signedCount} of ${expectedCrewCount} workers signed`,
+    allSigned: signedCount >= expectedCrewCount
+  };
+}
+
+function findTodayDha(db) {
+  const today = getTodayDateString();
+  return db.dhas.find((item) => item.date === today && item.projectName === defaultDhaTemplate.projectName && item.foreman === defaultDhaTemplate.foreman && item.status !== 'completed');
+}
+
 app.get('/', (req, res) => res.redirect('/dashboard'));
 
 app.get('/dashboard', (req, res) => {
   const db = readDb();
   const dhas = [...db.dhas].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.render('dashboard', { dhas });
+  res.render('dashboard', { dhas, todayDate: getTodayDateString(), defaultCrewCount: DEFAULT_CREW_COUNT });
+});
+
+app.get('/foreman/start-today', (req, res) => {
+  const db = readDb();
+  const existing = findTodayDha(db);
+  if (existing) return res.redirect(`/dhas/${existing.id}`);
+
+  const dha = createDhaRecord();
+  db.dhas.push(dha);
+  writeDb(db);
+  res.redirect(`/dhas/${dha.id}`);
 });
 
 app.get('/foreman/new', (req, res) => {
-  const now = new Date();
-  const defaults = {
-    ...defaultDhaTemplate,
-    date: now.toISOString().slice(0, 10),
-    time: now.toTimeString().slice(0, 5)
-  };
-  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults });
+  const defaults = makeDefaultDha();
+  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults, defaultCrewCount: DEFAULT_CREW_COUNT });
 });
 
 app.post('/foreman/new', (req, res) => {
-  const dha = {
-    id: uuidv4(),
-    signToken: uuidv4(),
+  const dha = createDhaRecord({
     projectName: req.body.projectName || '',
     projectNumber: req.body.projectNumber || '',
     date: req.body.date || '',
@@ -211,20 +304,18 @@ app.post('/foreman/new', (req, res) => {
     coordinatedWithOthers: req.body.coordinatedWithOthers || 'N/A',
     incidentsOrNearMisses: req.body.incidentsOrNearMisses || 'No',
     incidentsExplanation: req.body.incidentsExplanation || '',
+    expectedCrewCount: req.body.expectedCrewCount || DEFAULT_CREW_COUNT,
     toolsEquipment: req.body.toolsEquipment || '',
     permits: normalizeArray(req.body.permits),
     permitsOther: req.body.permitsOther || '',
     training: normalizeArray(req.body.training),
     trainingOther: req.body.trainingOther || '',
     taskRows: normalizeRows(req.body),
-    crewSignatures: [],
     foremanSignature: req.body.foremanSignature || '',
     foremanSignatureName: req.body.foremanSignatureName || req.body.foreman || '',
     reviewerSignature: req.body.reviewerSignature || '',
-    reviewerSignatureName: req.body.reviewerSignatureName || '',
-    createdAt: new Date().toISOString(),
-    status: 'open'
-  };
+    reviewerSignatureName: req.body.reviewerSignatureName || ''
+  });
 
   const db = readDb();
   db.dhas.push(dha);
@@ -237,12 +328,27 @@ app.get('/dhas/:id', async (req, res) => {
   const dha = db.dhas.find((item) => item.id === req.params.id);
   if (!dha) return res.status(404).send('DHA not found');
 
-  const signUrl = `${BASE_URL}/sign/${dha.signToken}`;
+  const signUrl = `${getBaseUrl(req)}/sign/${dha.signToken}`;
   const qrCodeDataUrl = await QRCode.toDataURL(signUrl, { width: 220, margin: 1 });
   const summaries = buildHazardSummary(dha.taskRows || []);
   const crewGrid = buildCrewGrid(dha.crewSignatures || []);
+  const progress = getSignatureProgress(dha);
 
-  res.render('show', { dha, signUrl, qrCodeDataUrl, summaries, crewGrid, hazardExamples, controlExamples });
+  res.render('show', {
+    dha,
+    signUrl,
+    qrCodeDataUrl,
+    summaries,
+    crewGrid,
+    hazardExamples,
+    controlExamples,
+    progress,
+    printMode: req.query.print === '1'
+  });
+});
+
+app.get('/dhas/:id/pdf', (req, res) => {
+  res.redirect(`/dhas/${req.params.id}?print=1`);
 });
 
 app.get('/sign/:token', (req, res) => {
@@ -250,7 +356,8 @@ app.get('/sign/:token', (req, res) => {
   const dha = db.dhas.find((item) => item.signToken === req.params.token);
   if (!dha) return res.status(404).send('Signature page not found');
   const summaries = buildHazardSummary(dha.taskRows || []);
-  res.render('sign', { dha, summaries, error: null });
+  const progress = getSignatureProgress(dha);
+  res.render('sign', { dha, summaries, error: null, progress });
 });
 
 app.post('/sign/:token', (req, res) => {
@@ -258,21 +365,36 @@ app.post('/sign/:token', (req, res) => {
   const dha = db.dhas.find((item) => item.signToken === req.params.token);
   if (!dha) return res.status(404).send('Signature page not found');
 
-  if (!req.body.signerName || !req.body.signatureData) {
-    const summaries = buildHazardSummary(dha.taskRows || []);
-    return res.status(400).render('sign', { dha, summaries, error: 'Name and signature are required.' });
+  const summaries = buildHazardSummary(dha.taskRows || []);
+  const progress = getSignatureProgress(dha);
+  const signerName = (req.body.signerName || '').trim();
+  const signatureData = req.body.signatureData || '';
+
+  if (!signerName || !signatureData) {
+    return res.status(400).render('sign', { dha, summaries, error: 'Name and signature are required.', progress });
+  }
+
+  const duplicate = (dha.crewSignatures || []).find((item) => item.signerName.trim().toLowerCase() === signerName.toLowerCase());
+  if (duplicate) {
+    return res.status(400).render('sign', { dha, summaries, error: 'That worker already signed this DHA.', progress });
   }
 
   dha.crewSignatures.push({
     id: uuidv4(),
-    signerName: req.body.signerName,
+    signerName,
     role: req.body.role || 'Crew Member',
-    signatureData: req.body.signatureData,
+    signatureData,
     signedAt: new Date().toISOString()
   });
 
+  const updatedProgress = getSignatureProgress(dha);
+  if (updatedProgress.allSigned && dha.status !== 'completed') {
+    dha.status = 'completed';
+    dha.closedAt = new Date().toISOString();
+  }
+
   writeDb(db);
-  res.render('sign-success', { dha, signerName: req.body.signerName });
+  res.render('sign-success', { dha, signerName, progress: updatedProgress });
 });
 
 app.post('/dhas/:id/close', (req, res) => {

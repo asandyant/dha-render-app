@@ -1,12 +1,16 @@
-<%- include('partials/header', { title: 'DHA Dashboard', heading: 'DHA Dashboard', subheading: 'Paper-style DHA form with QR crew signatures.' }) %>
+<%- include('partials/header', { title: 'DHA Dashboard', heading: 'DHA Dashboard', subheading: 'Safespan daily hazard analysis with QR crew signatures and live sign count.' }) %>
 
-<div class="card no-print">
+<div class="card no-print hero-card">
   <div class="topbar">
     <div>
-      <div style="font-size:24px;font-weight:800;">Recent DHAs</div>
-      <div class="muted">Create the daily form, then let the crew scan the QR code to sign from the field.</div>
+      <div style="font-size:24px;font-weight:800;">Start today fast</div>
+      <div class="muted">One tap creates today’s Safespan DHA with your saved defaults, a public worker sign link, QR code, and live signature count.</div>
+      <div class="small muted" style="margin-top:8px;">Default crew target: <strong><%= defaultCrewCount %> workers</strong> · Date: <strong><%= todayDate %></strong></div>
     </div>
-    <a class="btn primary" href="/foreman/new">Create today’s DHA</a>
+    <div class="actions">
+      <a class="btn primary" href="/foreman/start-today">Start Today's DHA</a>
+      <a class="btn secondary" href="/foreman/new">Open editable form</a>
+    </div>
   </div>
 </div>
 
@@ -14,20 +18,21 @@
   <% if (!dhas.length) { %>
     <div class="card">
       <div style="font-size:18px;font-weight:700;margin-bottom:6px;">No DHAs yet.</div>
-      <div class="muted">Start with the new foreman form. The saved record will show a paper-style view that matches your PDF much more closely.</div>
+      <div class="muted">Click <strong>Start Today's DHA</strong> and Shane will get the ready-to-use Safespan sheet plus worker QR code right away.</div>
     </div>
   <% } %>
 
-  <% dhas.forEach(function(dha) { %>
+  <% dhas.forEach(function(dha) { const signedCount = (dha.crewSignatures || []).length; const expectedCrewCount = Number(dha.expectedCrewCount) || defaultCrewCount; %>
     <div class="row-card">
       <div class="topbar">
         <div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
             <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
             <span class="small muted"><%= new Date(dha.createdAt).toLocaleString() %></span>
+            <span class="count-pill"><%= signedCount %> / <%= expectedCrewCount %> signed</span>
           </div>
           <div style="font-size:22px;font-weight:800;"><%= dha.projectName || 'Untitled Project' %></div>
-          <div class="muted">Project / #: <%= dha.projectNumber || '—' %> · Foreman: <%= dha.foreman || '—' %> · Date: <%= dha.date || '—' %></div>
+          <div class="muted">Foreman: <%= dha.foreman || '—' %> · Superintendent: <%= dha.superintendent || '—' %> · Date: <%= dha.date || '—' %></div>
         </div>
         <div class="actions">
           <a class="btn primary" href="/dhas/<%= dha.id %>">Open</a>

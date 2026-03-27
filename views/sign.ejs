@@ -1,4 +1,14 @@
-<%- include('partials/header', { title: 'Crew Sign', heading: 'Crew Signature Page', subheading: (dha.projectName || 'DHA') + ' · ' + (dha.date || '') }) %>
+<%- include('partials/header', { title: 'Crew Sign', heading: 'Worker signature page', subheading: (dha.projectName || 'DHA') + ' · ' + (dha.date || '') }) %>
+
+<div class="card no-print">
+  <div class="topbar">
+    <div>
+      <div style="font-size:22px;font-weight:800;">Sign today’s DHA</div>
+      <div class="muted">Each worker enters a name, signs, and the completed sheet updates with a live count.</div>
+    </div>
+    <div class="count-pill"><%= progress.progressText %></div>
+  </div>
+</div>
 
 <div class="grid two">
   <div class="card">

@@ -1,22 +1,17 @@
-<%- include('partials/header', { title: 'New DHA', heading: 'New Daily Hazard Analysis', subheading: 'This version is laid out to mirror the original DHA sheet.' }) %>
+<%- include('partials/header', { title: 'New DHA', heading: 'Editable DHA template', subheading: 'Your Safespan defaults are prefilled. Use Start Today for the fastest field flow.' }) %>
+
+<div class="card no-print">
+  <div class="topbar">
+    <div>
+      <div style="font-size:22px;font-weight:800;">Safespan default template</div>
+      <div class="muted">This page is for tweaking the defaults before saving a DHA manually. Most days Shane can skip this and tap <strong>Start Today's DHA</strong>.</div>
+    </div>
+    <a class="btn primary" href="/foreman/start-today">Start Today's DHA</a>
+  </div>
+</div>
 
 <form method="POST" action="/foreman/new">
-  <div class="paper-toolbar no-print">
-    <div class="card" style="margin-bottom:12px;">
-      <div class="topbar">
-        <div>
-          <div style="font-size:22px;font-weight:800;">PDF-style entry form</div>
-          <div class="muted">Fill this out like the paper sheet. The saved DHA will show in a matching paper-style layout with QR code and crew sign-in.</div>
-        </div>
-        <div class="actions">
-          <button class="btn primary" type="submit">Save DHA</button>
-          <a class="btn secondary" href="/dashboard">Cancel</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <section class="paper">
+  <div class="paper">
     <div class="pdf-header">
       <div class="ab-logo"><span>AB</span> <span>American<br>Bridge</span></div>
       <div class="pdf-title">DAILY HAZARD ANALYSIS</div>
@@ -25,92 +20,51 @@
 
     <table class="pdf-table">
       <tr>
-        <td colspan="2">
-          <div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><input type="text" name="projectName" placeholder="Project name" value="<%= defaults.projectName %>" required></div></div>
-        </td>
-        <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><input type="date" name="date" value="<%= defaults.date %>" required></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><input type="time" name="time" value="<%= defaults.time %>" required></div></div></td>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><input type="text" name="projectName" value="<%= defaults.projectName %>"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><input type="date" name="date" value="<%= defaults.date %>"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><input type="time" name="time" value="<%= defaults.time %>"></div></div></td>
       </tr>
       <tr>
         <td colspan="2"><div class="cell-line"><div class="cell-label">Superintendent:</div><div class="cell-value"><input type="text" name="superintendent" value="<%= defaults.superintendent %>"></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><input type="text" name="foreman" value="<%= defaults.foreman %>" required></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><input type="text" name="weather" value="<%= defaults.weather %>" placeholder="Clear / windy / 48°F"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><input type="text" name="foreman" value="<%= defaults.foreman %>"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><input type="text" name="weather" value="<%= defaults.weather %>"></div></div></td>
       </tr>
       <tr>
-        <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Location(s):</div><div class="cell-value"><input type="text" name="workAreaLocation"></div></div></td>
-        <td colspan="2">
-          <div class="cell-line">
-            <div class="cell-label">Work Area Surveyed:</div>
-            <div class="cell-value yesno">
-              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="Yes" <%= defaults.workAreaSurveyed === 'Yes' ? 'checked' : '' %>> Yes</label>
-              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="N/A" <%= defaults.workAreaSurveyed === 'N/A' ? 'checked' : '' %>> N/A</label>
-            </div>
-          </div>
-        </td>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Location(s):</div><div class="cell-value"><input type="text" name="workAreaLocation" value="<%= defaults.workAreaLocation %>"></div></div></td>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Expected Crew Signers:</div><div class="cell-value"><input type="text" name="expectedCrewCount" value="<%= defaults.expectedCrewCount || defaultCrewCount %>"></div></div></td>
       </tr>
       <tr>
-        <td colspan="4">
-          <div class="cell-line">
-            <div class="cell-label">Associated JHA Reviewed / Signed by Crew:</div>
-            <div class="cell-value yesno">
-              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="Yes" <%= defaults.jhaReviewed === 'Yes' ? 'checked' : '' %>> Yes</label>
-              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="N/A" <%= defaults.jhaReviewed === 'N/A' ? 'checked' : '' %>> N/A</label>
-            </div>
-          </div>
-        </td>
+        <td colspan="2"><div class="cell-label" style="border-right:0;">Work Area Surveyed:</div><div class="full-line"><label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="Yes" <%= defaults.workAreaSurveyed === 'Yes' ? 'checked' : '' %>> Yes</label><label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="N/A" <%= defaults.workAreaSurveyed === 'N/A' ? 'checked' : '' %>> N/A</label></div></td>
+        <td colspan="2"><div class="cell-label" style="border-right:0;">Associated JHA Reviewed / Signed by Crew:</div><div class="full-line"><label class="radio-inline"><input type="radio" name="jhaReviewed" value="Yes" <%= defaults.jhaReviewed === 'Yes' ? 'checked' : '' %>> Yes</label><label class="radio-inline"><input type="radio" name="jhaReviewed" value="N/A" <%= defaults.jhaReviewed === 'N/A' ? 'checked' : '' %>> N/A</label></div></td>
       </tr>
       <tr>
-        <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><textarea name="taskDescription" required placeholder="Describe today’s work."><%= defaults.taskDescription %></textarea></div></td>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><textarea name="taskDescription"><%= defaults.taskDescription %></textarea></div></td>
       </tr>
       <tr>
-        <td colspan="2">
-          <div class="cell-label" style="border-right:0;">Are Others Working Above, Below or Beside Your Work Areas?</div>
-          <div class="cell-value yesno" style="border-top:1px solid var(--line);">
-            <label class="radio-inline"><input type="radio" name="othersWorking" value="Yes" <%= defaults.othersWorking === 'Yes' ? 'checked' : '' %>> Yes</label>
-            <label class="radio-inline"><input type="radio" name="othersWorking" value="N/A" <%= defaults.othersWorking === 'N/A' ? 'checked' : '' %>> N/A</label>
-          </div>
-        </td>
-        <td colspan="2">
-          <div class="cell-label" style="border-right:0;">Have They Been Coordinated / Communicated with?</div>
-          <div class="cell-value yesno" style="border-top:1px solid var(--line);">
-            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="Yes" <%= defaults.coordinatedWithOthers === 'Yes' ? 'checked' : '' %>> Yes</label>
-            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="N/A" <%= defaults.coordinatedWithOthers === 'N/A' ? 'checked' : '' %>> N/A</label>
-          </div>
-        </td>
+        <td colspan="2"><div class="cell-label" style="border-right:0;">Are Others Working Above, Below or Beside Your Work Areas?</div><div class="full-line"><label class="radio-inline"><input type="radio" name="othersWorking" value="Yes" <%= defaults.othersWorking === 'Yes' ? 'checked' : '' %>> Yes</label><label class="radio-inline"><input type="radio" name="othersWorking" value="N/A" <%= defaults.othersWorking === 'N/A' ? 'checked' : '' %>> N/A</label></div></td>
+        <td colspan="2"><div class="cell-label" style="border-right:0;">Have They Been Coordinated / Communicated with?</div><div class="full-line"><label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="Yes" <%= defaults.coordinatedWithOthers === 'Yes' ? 'checked' : '' %>> Yes</label><label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="N/A" <%= defaults.coordinatedWithOthers === 'N/A' ? 'checked' : '' %>> N/A</label></div></td>
       </tr>
       <tr>
-        <td colspan="4">
-          <div class="cell-label" style="border-right:0;">Were There Any Reported Incidents or Near Misses Yesterday or Today?</div>
-          <div class="full-line" style="border-top:1px solid var(--line);">
-            <div class="yesno" style="margin-bottom:8px;">
-              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="Yes" <%= defaults.incidentsOrNearMisses === 'Yes' ? 'checked' : '' %>> Yes</label>
-              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="No" <%= defaults.incidentsOrNearMisses === 'No' ? 'checked' : '' %>> No</label>
-              <span style="font-weight:700;">If Yes, Please Explain:</span>
-            </div>
-            <textarea name="incidentsExplanation"></textarea>
-          </div>
-        </td>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Were There Any Reported Incidents or Near Misses Yesterday or Today?</div><div class="full-line"><label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="Yes" <%= defaults.incidentsOrNearMisses === 'Yes' ? 'checked' : '' %>> Yes</label><label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="No" <%= defaults.incidentsOrNearMisses === 'No' ? 'checked' : '' %>> No</label><div style="margin-top:10px;"><label class="field-label">If yes, explain</label><input type="text" name="incidentsExplanation" value="<%= defaults.incidentsExplanation %>"></div></div></td>
       </tr>
       <tr>
-        <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><textarea name="toolsEquipment" placeholder="List tools, equipment, and safety gear for today’s task."><%= defaults.toolsEquipment %></textarea></div></td>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><textarea name="toolsEquipment"><%= defaults.toolsEquipment %></textarea></div></td>
       </tr>
       <tr>
         <td colspan="2">
           <div class="section-subbanner">Required Permits/Authorizations/Inspections</div>
-          <div class="full-line">
-            <% permitOptions.forEach(function(option) { %>
-              <label class="check-item"><input type="checkbox" name="permits" value="<%= option %>" <%= defaults.permits.includes(option) ? 'checked' : '' %>> <%= option %></label>
+          <div class="full-line checks-grid">
+            <% permitOptions.forEach(function(item) { %>
+              <label class="check-item"><input type="checkbox" name="permits" value="<%= item %>" <%= defaults.permits.includes(item) ? 'checked' : '' %>> <%= item %></label>
             <% }) %>
-            <input type="text" name="permitsOther" placeholder="Other permit details">
           </div>
         </td>
         <td colspan="2">
           <div class="section-subbanner">Specific Training Required</div>
-          <div class="full-line">
-            <% trainingOptions.forEach(function(option) { %>
-              <label class="check-item"><input type="checkbox" name="training" value="<%= option %>" <%= defaults.training.includes(option) ? 'checked' : '' %>> <%= option %></label>
+          <div class="full-line checks-grid">
+            <% trainingOptions.forEach(function(item) { %>
+              <label class="check-item"><input type="checkbox" name="training" value="<%= item %>" <%= defaults.training.includes(item) ? 'checked' : '' %>> <%= item %></label>
             <% }) %>
-            <input type="text" name="trainingOther" placeholder="Other training details">
           </div>
         </td>
       </tr>
@@ -121,72 +75,25 @@
       <thead class="work-head">
         <tr>
           <th class="yellow">TASK STEPS</th>
-          <th class="red">HAZARDS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
-          <th class="green">CONTROLS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
+          <th class="red">HAZARDS Associated w/ The Task</th>
+          <th class="green">CONTROLS Associated w/ The Task</th>
         </tr>
       </thead>
       <tbody>
-        <% for (let i = 0; i < 8; i++) { %>
+        <% defaults.taskRows.forEach(function(row) { %>
           <tr class="work-row">
-            <td><textarea name="taskStep"><%= defaults.taskRows[i] ? defaults.taskRows[i].taskStep : '' %></textarea></td>
-            <td><textarea name="hazard"><%= defaults.taskRows[i] ? defaults.taskRows[i].hazard : '' %></textarea></td>
-            <td><textarea name="control"><%= defaults.taskRows[i] ? defaults.taskRows[i].control : '' %></textarea></td>
+            <td><textarea name="taskStep"><%= row.taskStep %></textarea></td>
+            <td><textarea name="hazard"><%= row.hazard %></textarea></td>
+            <td><textarea name="control"><%= row.control %></textarea></td>
           </tr>
-        <% } %>
+        <% }) %>
       </tbody>
     </table>
 
-    <div class="section-banner">CREW SIGN IN</div>
-    <table class="pdf-table">
-      <tr>
-        <th class="section-subbanner">PRINT NAME</th>
-        <th class="section-subbanner">SIGNATURE</th>
-        <th class="section-subbanner">PRINT NAME</th>
-        <th class="section-subbanner">SIGNATURE</th>
-      </tr>
-      <% for (let i = 0; i < 5; i++) { %>
-        <tr class="sign-row"><td></td><td></td><td></td><td></td></tr>
-      <% } %>
-    </table>
-
-    <div class="section-banner">SUPERVISION</div>
-    <table class="pdf-table">
-      <tr>
-        <td>
-          <div class="cell-line"><div class="cell-label">Person Conducting DHA (signature):</div><div class="cell-value"><input type="text" name="foremanSignatureName" value="<%= defaults.foreman %>" placeholder="Type name for now"></div></div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <div class="cell-line"><div class="cell-label">Reviewer (signature):</div><div class="cell-value"><input type="text" name="reviewerSignatureName"></div></div>
-        </td>
-      </tr>
-    </table>
-
-    <div class="footer-note">
-      <div>White - Office &nbsp;&nbsp;&nbsp; Yellow - Field Supervision</div>
-      <div><strong>AB-DHA_REV 2</strong> &nbsp; 08-30-2022</div>
+    <div class="print-actions no-print" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;">
+      <a class="btn secondary" href="/foreman/start-today">Use default Start Today flow</a>
+      <button class="btn primary" type="submit">Save DHA</button>
     </div>
-  </section>
-
-  <div class="card helper-card no-print">
-    <div style="font-size:22px;font-weight:800;margin-bottom:12px;">Reference guide from the back page</div>
-    <div class="muted" style="margin-bottom:14px;">This stays on the form so the foreman can quickly copy the same kind of hazard and control language shown on the original PDF.</div>
-
-    <div class="helper-title red">HAZARDS - Examples</div>
-    <div class="reference-grid">
-      <% hazardExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
-    </div>
-
-    <div class="helper-title green">CONTROLS - Examples</div>
-    <div class="reference-grid">
-      <% controlExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
-    </div>
-  </div>
-
-  <div class="actions no-print" style="margin-top:16px;">
-    <button class="btn primary" type="submit">Save DHA and generate crew QR</button>
-    <a class="btn secondary" href="/dashboard">Cancel</a>
   </div>
 </form>
 

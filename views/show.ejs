@@ -1,17 +1,19 @@
-<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Paper-style DHA view with QR crew sign page.' }) %>
+<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Paper-style DHA view with QR crew sign page, live sign count, and PDF save option.' }) %>
 
 <div class="card no-print">
   <div class="topbar">
     <div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
         <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
+        <span class="count-pill"><%= progress.progressText %></span>
         <span class="small muted">Created <%= new Date(dha.createdAt).toLocaleString() %></span>
       </div>
-      <div style="font-size:24px;font-weight:800;">Paper-style DHA record</div>
-      <div class="muted">This page is formatted to look much closer to your original PDF. You can also print it.</div>
+      <div style="font-size:24px;font-weight:800;">Today's Safespan DHA</div>
+      <div class="muted">Shane can use this one page to review the sheet, show the QR code, watch the signature count update, and save the finished record as a PDF.</div>
     </div>
     <div class="actions">
-      <a class="btn secondary" href="<%= signUrl %>">Open crew sign page</a>
+      <a class="btn secondary" href="<%= signUrl %>">Open worker sign page</a>
+      <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf">Save as PDF</a>
       <button class="btn primary" onclick="window.print()" type="button">Print</button>
       <% if (dha.status !== 'completed') { %>
         <form method="POST" action="/dhas/<%= dha.id %>/close" style="display:inline;">
@@ -23,16 +25,43 @@
 </div>
 
 <div class="card no-print">
-  <div class="grid two">
-    <div>
+  <div class="topbar" style="align-items:flex-start;">
+    <div style="flex:1;min-width:260px;">
       <div style="font-size:20px;font-weight:800;margin-bottom:8px;">Crew sign QR code</div>
-      <div class="muted">Workers scan this to sign on their phones. Their names and signatures fill into the crew sign-in area below.</div>
-      <div style="margin-top:10px;word-break:break-all;" class="small"><%= signUrl %></div>
+      <div class="muted">Workers scan this on their phones, type their names, sign with a finger, and their signatures drop into the crew sign-in area below.</div>
+      <div style="margin-top:12px;word-break:break-all;" class="small"><strong>Worker sign link:</strong> <%= signUrl %></div>
+      <div class="topbar" style="justify-content:flex-start;margin-top:12px;">
+        <button class="btn secondary" type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<%= signUrl %>')">Copy sign link</button>
+        <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh count</a>
+      </div>
     </div>
-    <div style="text-align:center;">
+    <div style="text-align:center;min-width:240px;">
       <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" style="width:220px;max-width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:10px;">
+      <div class="small muted" style="margin-top:8px;"><%= progress.progressText %></div>
     </div>
   </div>
+</div>
+
+<div class="card no-print">
+  <div class="topbar" style="align-items:flex-start;">
+    <div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px;">Signed worker list</div>
+      <div class="muted">Use this to confirm who is already on the DHA before work starts.</div>
+    </div>
+    <div class="count-pill"><%= progress.progressText %></div>
+  </div>
+  <% if (!(dha.crewSignatures || []).length) { %>
+    <div class="muted">No workers have signed yet.</div>
+  <% } else { %>
+    <div class="signed-list">
+      <% (dha.crewSignatures || []).forEach(function(signature, index) { %>
+        <div class="signed-item">
+          <div><strong><%= index + 1 %>. <%= signature.signerName %></strong> <span class="muted">· <%= signature.role || 'Crew Member' %></span></div>
+          <div class="small muted"><%= new Date(signature.signedAt).toLocaleString() %></div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
 </div>
 
 <section class="paper print-sheet">
@@ -172,5 +201,13 @@
 
   <div class="ref-footer">ABridge to SAFETY excellence</div>
 </section>
+
+<% if (printMode) { %>
+<script>
+  window.addEventListener('load', function () {
+    setTimeout(function () { window.print(); }, 250);
+  });
+</script>
+<% } %>
 
 <%- include('partials/footer') %>
