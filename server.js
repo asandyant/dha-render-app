@@ -62,34 +62,39 @@ const defaultDhaTemplate = {
   othersWorking: 'N/A',
   coordinatedWithOthers: 'N/A',
   incidentsOrNearMisses: 'No',
-  toolsEquipment: 'Safespan components, chain falls, slings, shackles, tag lines, swing stages, hand tools, impact guns, radios, harnesses, lanyards, hard hats, safety glasses, gloves, high-visibility vests, and required PPE.',
+  toolsEquipment: 'Safespan components, chain falls, slings, shackles, spreader bars as needed, tag lines, swing stages, hand tools, impact guns, radios, harnesses, lanyards, hard hats, safety glasses, gloves, high-visibility vests, barricades, and required PPE.',
   permits: ['Tools / Equipment', 'Rigging'],
   training: ['Flagging', 'Rigging / Signaling'],
   taskRows: [
     {
-      taskStep: 'Safespan installation',
-      hazard: 'Falling objects, falls, pinch points',
-      control: 'All tools to be tethered, fall protection and PPE, be aware of surroundings'
+      taskStep: 'Hoisting Safespan pieces',
+      hazard: 'Suspended loads, falling objects, struck-by hazards, shifting loads, improper or damaged rigging',
+      control: 'Inspect rigging before use, use rated slings and shackles, use tag lines, keep workers clear of suspended loads, maintain clear communication between signal person, operator, and crew'
     },
     {
-      taskStep: 'Rigging and hoisting Safespan components into place',
-      hazard: 'Suspended loads, struck-by hazards, improper or damaged rigging, dropped materials',
-      control: 'Inspect rigging before use, use rated slings/shackles, keep workers clear of suspended loads, use tag lines, maintain controlled access below'
+      taskStep: 'Staging material',
+      hazard: 'Pinch points, caught-between hazards, unstable stored material, trips in the work area',
+      control: 'Stage material on stable surfaces, keep hands clear while setting material, secure stored pieces, maintain housekeeping, keep walk paths open'
     },
     {
-      taskStep: 'Working from swing stages during installation',
-      hazard: 'Falls from elevation, swing stage instability, dropped tools/material, entanglement',
-      control: '100% tie-off, inspect swing stage and fall arrest gear before use, secure tools/materials, maintain proper platform loading and communication'
+      taskStep: 'Working from elevation',
+      hazard: 'Falls from elevation, dropped tools or materials, loss of footing',
+      control: '100% fall protection as required, all tools tethered, secure materials, maintain three points of contact where applicable, stay aware of surroundings'
     },
     {
-      taskStep: 'Positioning, bolting, and adjusting deck sections',
-      hazard: 'Pinch points, hand injuries, overexertion, awkward body positioning',
-      control: 'Keep hands clear during alignment, use proper lifting techniques, maintain good body position, wear gloves, communicate before moving sections'
+      taskStep: 'Working from swing stages',
+      hazard: 'Falls, swing stage movement or instability, dropped objects, entanglement, improper loading',
+      control: 'Inspect swing stage and fall arrest equipment before use, stay tied off, do not overload platform, secure tools and material, keep platform organized, maintain communication with crew'
     },
     {
-      taskStep: 'Housekeeping and material handling in work area',
-      hazard: 'Slip/trip hazards, loose material, debris falling to lower levels',
-      control: 'Maintain housekeeping, secure material at all times, barricade drop zone, remove debris as work progresses'
+      taskStep: 'Keeping the drop zone clear',
+      hazard: 'Workers or public entering hazard area, falling objects, struck-by hazards below',
+      control: 'Barricade and mark the drop zone, use flagging and signage, maintain controlled access, assign spotter when needed, stop work if zone is compromised'
+    },
+    {
+      taskStep: 'Communication between signal person, operator, and crew',
+      hazard: 'Miscommunication during lifts, unexpected movement, struck-by or pinch-point injuries',
+      control: 'Use one designated signal person, review signals before work starts, maintain radio or visual communication, stop the lift if communication is lost, confirm crew is clear before moving material'
     }
   ]
 };
