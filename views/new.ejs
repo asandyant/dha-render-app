@@ -26,15 +26,15 @@
     <table class="pdf-table">
       <tr>
         <td colspan="2">
-          <div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><input type="text" name="projectName" placeholder="Project name" required></div></div>
+          <div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><input type="text" name="projectName" placeholder="Project name" value="<%= defaults.projectName %>" required></div></div>
         </td>
-        <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><input type="date" name="date" required></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><input type="time" name="time" required></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><input type="date" name="date" value="<%= defaults.date %>" required></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><input type="time" name="time" value="<%= defaults.time %>" required></div></div></td>
       </tr>
       <tr>
-        <td colspan="2"><div class="cell-line"><div class="cell-label">Superintendent:</div><div class="cell-value"><input type="text" name="superintendent"></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><input type="text" name="foreman" required></div></div></td>
-        <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><input type="text" name="weather" placeholder="Clear / windy / 48°F"></div></div></td>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Superintendent:</div><div class="cell-value"><input type="text" name="superintendent" value="<%= defaults.superintendent %>"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><input type="text" name="foreman" value="<%= defaults.foreman %>" required></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><input type="text" name="weather" value="<%= defaults.weather %>" placeholder="Clear / windy / 48°F"></div></div></td>
       </tr>
       <tr>
         <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Location(s):</div><div class="cell-value"><input type="text" name="workAreaLocation"></div></div></td>
@@ -42,8 +42,8 @@
           <div class="cell-line">
             <div class="cell-label">Work Area Surveyed:</div>
             <div class="cell-value yesno">
-              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="Yes" checked> Yes</label>
-              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="N/A"> N/A</label>
+              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="Yes" <%= defaults.workAreaSurveyed === 'Yes' ? 'checked' : '' %>> Yes</label>
+              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="N/A" <%= defaults.workAreaSurveyed === 'N/A' ? 'checked' : '' %>> N/A</label>
             </div>
           </div>
         </td>
@@ -53,28 +53,28 @@
           <div class="cell-line">
             <div class="cell-label">Associated JHA Reviewed / Signed by Crew:</div>
             <div class="cell-value yesno">
-              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="Yes" checked> Yes</label>
-              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="N/A"> N/A</label>
+              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="Yes" <%= defaults.jhaReviewed === 'Yes' ? 'checked' : '' %>> Yes</label>
+              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="N/A" <%= defaults.jhaReviewed === 'N/A' ? 'checked' : '' %>> N/A</label>
             </div>
           </div>
         </td>
       </tr>
       <tr>
-        <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><textarea name="taskDescription" required placeholder="Describe today’s work."></textarea></div></td>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><textarea name="taskDescription" required placeholder="Describe today’s work."><%= defaults.taskDescription %></textarea></div></td>
       </tr>
       <tr>
         <td colspan="2">
           <div class="cell-label" style="border-right:0;">Are Others Working Above, Below or Beside Your Work Areas?</div>
           <div class="cell-value yesno" style="border-top:1px solid var(--line);">
-            <label class="radio-inline"><input type="radio" name="othersWorking" value="Yes"> Yes</label>
-            <label class="radio-inline"><input type="radio" name="othersWorking" value="N/A" checked> N/A</label>
+            <label class="radio-inline"><input type="radio" name="othersWorking" value="Yes" <%= defaults.othersWorking === 'Yes' ? 'checked' : '' %>> Yes</label>
+            <label class="radio-inline"><input type="radio" name="othersWorking" value="N/A" <%= defaults.othersWorking === 'N/A' ? 'checked' : '' %>> N/A</label>
           </div>
         </td>
         <td colspan="2">
           <div class="cell-label" style="border-right:0;">Have They Been Coordinated / Communicated with?</div>
           <div class="cell-value yesno" style="border-top:1px solid var(--line);">
-            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="Yes"> Yes</label>
-            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="N/A" checked> N/A</label>
+            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="Yes" <%= defaults.coordinatedWithOthers === 'Yes' ? 'checked' : '' %>> Yes</label>
+            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="N/A" <%= defaults.coordinatedWithOthers === 'N/A' ? 'checked' : '' %>> N/A</label>
           </div>
         </td>
       </tr>
@@ -83,8 +83,8 @@
           <div class="cell-label" style="border-right:0;">Were There Any Reported Incidents or Near Misses Yesterday or Today?</div>
           <div class="full-line" style="border-top:1px solid var(--line);">
             <div class="yesno" style="margin-bottom:8px;">
-              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="Yes"> Yes</label>
-              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="No" checked> No</label>
+              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="Yes" <%= defaults.incidentsOrNearMisses === 'Yes' ? 'checked' : '' %>> Yes</label>
+              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="No" <%= defaults.incidentsOrNearMisses === 'No' ? 'checked' : '' %>> No</label>
               <span style="font-weight:700;">If Yes, Please Explain:</span>
             </div>
             <textarea name="incidentsExplanation"></textarea>
@@ -92,14 +92,14 @@
         </td>
       </tr>
       <tr>
-        <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><textarea name="toolsEquipment" placeholder="List tools, equipment, and safety gear for today’s task."></textarea></div></td>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><textarea name="toolsEquipment" placeholder="List tools, equipment, and safety gear for today’s task."><%= defaults.toolsEquipment %></textarea></div></td>
       </tr>
       <tr>
         <td colspan="2">
           <div class="section-subbanner">Required Permits/Authorizations/Inspections</div>
           <div class="full-line">
             <% permitOptions.forEach(function(option) { %>
-              <label class="check-item"><input type="checkbox" name="permits" value="<%= option %>"> <%= option %></label>
+              <label class="check-item"><input type="checkbox" name="permits" value="<%= option %>" <%= defaults.permits.includes(option) ? 'checked' : '' %>> <%= option %></label>
             <% }) %>
             <input type="text" name="permitsOther" placeholder="Other permit details">
           </div>
@@ -108,7 +108,7 @@
           <div class="section-subbanner">Specific Training Required</div>
           <div class="full-line">
             <% trainingOptions.forEach(function(option) { %>
-              <label class="check-item"><input type="checkbox" name="training" value="<%= option %>"> <%= option %></label>
+              <label class="check-item"><input type="checkbox" name="training" value="<%= option %>" <%= defaults.training.includes(option) ? 'checked' : '' %>> <%= option %></label>
             <% }) %>
             <input type="text" name="trainingOther" placeholder="Other training details">
           </div>
@@ -128,9 +128,9 @@
       <tbody>
         <% for (let i = 0; i < 8; i++) { %>
           <tr class="work-row">
-            <td><textarea name="taskStep"></textarea></td>
-            <td><textarea name="hazard"></textarea></td>
-            <td><textarea name="control"></textarea></td>
+            <td><textarea name="taskStep"><%= defaults.taskRows[i] ? defaults.taskRows[i].taskStep : '' %></textarea></td>
+            <td><textarea name="hazard"><%= defaults.taskRows[i] ? defaults.taskRows[i].hazard : '' %></textarea></td>
+            <td><textarea name="control"><%= defaults.taskRows[i] ? defaults.taskRows[i].control : '' %></textarea></td>
           </tr>
         <% } %>
       </tbody>
@@ -153,7 +153,7 @@
     <table class="pdf-table">
       <tr>
         <td>
-          <div class="cell-line"><div class="cell-label">Person Conducting DHA (signature):</div><div class="cell-value"><input type="text" name="foremanSignatureName" placeholder="Type name for now"></div></div>
+          <div class="cell-line"><div class="cell-label">Person Conducting DHA (signature):</div><div class="cell-value"><input type="text" name="foremanSignatureName" value="<%= defaults.foreman %>" placeholder="Type name for now"></div></div>
         </td>
       </tr>
       <tr>

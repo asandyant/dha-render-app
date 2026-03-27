@@ -50,6 +50,50 @@ const hazardExamples = [
   'Entanglement', 'Improper Use of Hand / Power Tools', 'Changing Weather / Environment'
 ];
 
+
+const defaultDhaTemplate = {
+  projectName: 'RK19-A',
+  superintendent: 'Anthony Lovich',
+  foreman: 'Shane Young',
+  weather: '',
+  workAreaSurveyed: 'Yes',
+  jhaReviewed: 'Yes',
+  taskDescription: 'Safespan installation',
+  othersWorking: 'N/A',
+  coordinatedWithOthers: 'N/A',
+  incidentsOrNearMisses: 'No',
+  toolsEquipment: 'Safespan components, chain falls, slings, shackles, tag lines, swing stages, hand tools, impact guns, radios, harnesses, lanyards, hard hats, safety glasses, gloves, high-visibility vests, and required PPE.',
+  permits: ['Tools / Equipment', 'Rigging'],
+  training: ['Flagging', 'Rigging / Signaling'],
+  taskRows: [
+    {
+      taskStep: 'Safespan installation',
+      hazard: 'Falling objects, falls, pinch points',
+      control: 'All tools to be tethered, fall protection and PPE, be aware of surroundings'
+    },
+    {
+      taskStep: 'Rigging and hoisting Safespan components into place',
+      hazard: 'Suspended loads, struck-by hazards, improper or damaged rigging, dropped materials',
+      control: 'Inspect rigging before use, use rated slings/shackles, keep workers clear of suspended loads, use tag lines, maintain controlled access below'
+    },
+    {
+      taskStep: 'Working from swing stages during installation',
+      hazard: 'Falls from elevation, swing stage instability, dropped tools/material, entanglement',
+      control: '100% tie-off, inspect swing stage and fall arrest gear before use, secure tools/materials, maintain proper platform loading and communication'
+    },
+    {
+      taskStep: 'Positioning, bolting, and adjusting deck sections',
+      hazard: 'Pinch points, hand injuries, overexertion, awkward body positioning',
+      control: 'Keep hands clear during alignment, use proper lifting techniques, maintain good body position, wear gloves, communicate before moving sections'
+    },
+    {
+      taskStep: 'Housekeeping and material handling in work area',
+      hazard: 'Slip/trip hazards, loose material, debris falling to lower levels',
+      control: 'Maintain housekeeping, secure material at all times, barricade drop zone, remove debris as work progresses'
+    }
+  ]
+};
+
 const controlExamples = [
   'Associated Permit(s)', 'Housekeeping', 'Shields / Sloping / Etc.',
   'Communication / Coordination', 'Hearing Protection', 'Signage / Barricades',
@@ -134,7 +178,13 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/foreman/new', (req, res) => {
-  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples });
+  const now = new Date();
+  const defaults = {
+    ...defaultDhaTemplate,
+    date: now.toISOString().slice(0, 10),
+    time: now.toTimeString().slice(0, 5)
+  };
+  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults });
 });
 
 app.post('/foreman/new', (req, res) => {
