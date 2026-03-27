@@ -37,6 +37,30 @@ const trainingOptions = [
   'Other'
 ];
 
+const hazardExamples = [
+  'Limited Access / Egress', 'Excessive Noise', 'Improper / Damaged Rigging',
+  'Awkward Work Position', 'Falls', 'Slippery Surfaces',
+  'Caught Between', 'Fire / Burn / Welding', 'Improper / Damaged PPE',
+  'Infectious Diseases', 'Flammable Material', 'Stored Energy',
+  'Improper Crane / Equipment Use', 'Hazardous Chemical Exposure', 'Struck By',
+  'Sharp Objects / Edges', 'Heat / Cold Exposure', 'Unsecured Loads',
+  'Dropped Objects', 'Manual Lifting', 'Vehicle / Equipment Traffic',
+  'Excessive Dust / Debris', 'Overexertion', 'Water / Drowning',
+  'Exposed / Defective Electrical', 'Pinch Points', 'Poor Housekeeping',
+  'Entanglement', 'Improper Use of Hand / Power Tools', 'Changing Weather / Environment'
+];
+
+const controlExamples = [
+  'Associated Permit(s)', 'Housekeeping', 'Shields / Sloping / Etc.',
+  'Communication / Coordination', 'Hearing Protection', 'Signage / Barricades',
+  'Controlled Access / Egress', 'Lock Out / Tag Out', 'Spotter / Fire Watch',
+  'Environmental / BMP’s', 'Lighting', 'Stretch and Flex',
+  'Equipment Inspection', 'PPE', 'Tag Lines',
+  'Equipment Guards', 'PFD(s) / Life Rings / Skiff', 'Tool Inspection',
+  'Fall Protection', 'Proper Lifting Techniques', 'Tool Tethering',
+  'Fire Extinguisher', 'Secured / Stored Cylinders', 'Whip Checks'
+];
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -44,9 +68,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 function readDb() {
-  if (!fs.existsSync(DB_PATH)) {
-    return { dhas: [] };
-  }
+  if (!fs.existsSync(DB_PATH)) return { dhas: [] };
   return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
 }
 
@@ -68,27 +90,42 @@ function normalizeRows(body) {
 
   for (let i = 0; i < maxLen; i += 1) {
     const row = {
-      taskStep: steps[i] || '',
-      hazard: hazards[i] || '',
-      control: controls[i] || ''
+      taskStep: (steps[i] || '').trim(),
+      hazard: (hazards[i] || '').trim(),
+      control: (controls[i] || '').trim()
     };
-    if (row.taskStep || row.hazard || row.control) {
-      rows.push(row);
-    }
+    if (row.taskStep || row.hazard || row.control) rows.push(row);
   }
 
-  return rows.length ? rows : [{ taskStep: '', hazard: '', control: '' }];
+  while (rows.length < 8) {
+    rows.push({ taskStep: '', hazard: '', control: '' });
+  }
+
+  return rows;
 }
 
 function buildHazardSummary(rows) {
-  const hazardText = rows.map((row) => row.hazard).filter(Boolean).join('; ');
-  const controlText = rows.map((row) => row.control).filter(Boolean).join('; ');
-  return { hazardText, controlText };
+  return {
+    hazardText: rows.map((row) => row.hazard).filter(Boolean).join('; '),
+    controlText: rows.map((row) => row.control).filter(Boolean).join('; ')
+  };
 }
 
-app.get('/', (req, res) => {
-  res.redirect('/dashboard');
-});
+function buildCrewGrid(signatures) {
+  const padded = [...signatures];
+  while (padded.length < 10) {
+    padded.push({ signerName: '', signatureData: '', signedAt: '' });
+  }
+  const left = [];
+  const right = [];
+  for (let i = 0; i < 5; i += 1) {
+    left.push(padded[i]);
+    right.push(padded[i + 5]);
+  }
+  return { left, right };
+}
+
+app.get('/', (req, res) => res.redirect('/dashboard'));
 
 app.get('/dashboard', (req, res) => {
   const db = readDb();
@@ -97,17 +134,10 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/foreman/new', (req, res) => {
-  res.render('new', {
-    permitOptions,
-    trainingOptions
-  });
+  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples });
 });
 
-app.post('/foreman/new', async (req, res) => {
-  const rows = normalizeRows(req.body);
-  const selectedPermits = normalizeArray(req.body.permits);
-  const selectedTraining = normalizeArray(req.body.training);
-
+app.post('/foreman/new', (req, res) => {
   const dha = {
     id: uuidv4(),
     signToken: uuidv4(),
@@ -119,23 +149,24 @@ app.post('/foreman/new', async (req, res) => {
     foreman: req.body.foreman || '',
     weather: req.body.weather || '',
     workAreaLocation: req.body.workAreaLocation || '',
-    workAreaSurveyed: req.body.workAreaSurveyed || '',
-    jhaReviewed: req.body.jhaReviewed || '',
+    workAreaSurveyed: req.body.workAreaSurveyed || 'N/A',
+    jhaReviewed: req.body.jhaReviewed || 'N/A',
     taskDescription: req.body.taskDescription || '',
-    coordinatedWithOthers: req.body.coordinatedWithOthers || '',
-    coordinatedExplanation: req.body.coordinatedExplanation || '',
-    incidentsOrNearMisses: req.body.incidentsOrNearMisses || '',
+    othersWorking: req.body.othersWorking || 'N/A',
+    coordinatedWithOthers: req.body.coordinatedWithOthers || 'N/A',
+    incidentsOrNearMisses: req.body.incidentsOrNearMisses || 'No',
     incidentsExplanation: req.body.incidentsExplanation || '',
     toolsEquipment: req.body.toolsEquipment || '',
-    safetyEquipment: req.body.safetyEquipment || '',
-    permits: selectedPermits,
+    permits: normalizeArray(req.body.permits),
     permitsOther: req.body.permitsOther || '',
-    training: selectedTraining,
+    training: normalizeArray(req.body.training),
     trainingOther: req.body.trainingOther || '',
-    taskRows: rows,
+    taskRows: normalizeRows(req.body),
     crewSignatures: [],
     foremanSignature: req.body.foremanSignature || '',
     foremanSignatureName: req.body.foremanSignatureName || req.body.foreman || '',
+    reviewerSignature: req.body.reviewerSignature || '',
+    reviewerSignatureName: req.body.reviewerSignatureName || '',
     createdAt: new Date().toISOString(),
     status: 'open'
   };
@@ -143,36 +174,26 @@ app.post('/foreman/new', async (req, res) => {
   const db = readDb();
   db.dhas.push(dha);
   writeDb(db);
-
   res.redirect(`/dhas/${dha.id}`);
 });
 
 app.get('/dhas/:id', async (req, res) => {
   const db = readDb();
   const dha = db.dhas.find((item) => item.id === req.params.id);
-  if (!dha) {
-    return res.status(404).send('DHA not found');
-  }
+  if (!dha) return res.status(404).send('DHA not found');
 
   const signUrl = `${BASE_URL}/sign/${dha.signToken}`;
-  const qrCodeDataUrl = await QRCode.toDataURL(signUrl, { width: 240, margin: 1 });
+  const qrCodeDataUrl = await QRCode.toDataURL(signUrl, { width: 220, margin: 1 });
   const summaries = buildHazardSummary(dha.taskRows || []);
+  const crewGrid = buildCrewGrid(dha.crewSignatures || []);
 
-  res.render('show', {
-    dha,
-    signUrl,
-    qrCodeDataUrl,
-    summaries
-  });
+  res.render('show', { dha, signUrl, qrCodeDataUrl, summaries, crewGrid, hazardExamples, controlExamples });
 });
 
 app.get('/sign/:token', (req, res) => {
   const db = readDb();
   const dha = db.dhas.find((item) => item.signToken === req.params.token);
-  if (!dha) {
-    return res.status(404).send('Signature page not found');
-  }
-
+  if (!dha) return res.status(404).send('Signature page not found');
   const summaries = buildHazardSummary(dha.taskRows || []);
   res.render('sign', { dha, summaries, error: null });
 });
@@ -180,17 +201,11 @@ app.get('/sign/:token', (req, res) => {
 app.post('/sign/:token', (req, res) => {
   const db = readDb();
   const dha = db.dhas.find((item) => item.signToken === req.params.token);
-  if (!dha) {
-    return res.status(404).send('Signature page not found');
-  }
+  if (!dha) return res.status(404).send('Signature page not found');
 
   if (!req.body.signerName || !req.body.signatureData) {
     const summaries = buildHazardSummary(dha.taskRows || []);
-    return res.status(400).render('sign', {
-      dha,
-      summaries,
-      error: 'Name and signature are required.'
-    });
+    return res.status(400).render('sign', { dha, summaries, error: 'Name and signature are required.' });
   }
 
   dha.crewSignatures.push({
@@ -208,10 +223,7 @@ app.post('/sign/:token', (req, res) => {
 app.post('/dhas/:id/close', (req, res) => {
   const db = readDb();
   const dha = db.dhas.find((item) => item.id === req.params.id);
-  if (!dha) {
-    return res.status(404).send('DHA not found');
-  }
-
+  if (!dha) return res.status(404).send('DHA not found');
   dha.status = 'completed';
   dha.closedAt = new Date().toISOString();
   writeDb(db);

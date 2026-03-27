@@ -7,18 +7,17 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="header">
-    <div class="container" style="margin:0 auto;">
-      <div class="topbar">
-        <div>
-          <h1><%= heading %></h1>
-          <% if (subheading) { %><p class="muted" style="color:#cbd5e1;margin-top:6px;"><%= subheading %></p><% } %>
-        </div>
-        <div class="actions">
-          <a class="btn ghost" href="/dashboard">Dashboard</a>
-          <a class="btn secondary" href="/foreman/new">New DHA</a>
-        </div>
+  <header class="app-header no-print">
+    <div class="container header-row">
+      <div>
+        <div style="font-size:28px;font-weight:800;"><%= heading %></div>
+        <% if (subheading) { %><div class="brand-sub"><%= subheading %></div><% } %>
+      </div>
+      <div class="actions">
+        <a class="btn secondary" href="/dashboard">Dashboard</a>
+        <a class="btn primary" href="/foreman/new">New DHA</a>
       </div>
     </div>
-  </div>
-  <div class="container">
+  </header>
+  <main class="page-wrap">
+    <div class="container">

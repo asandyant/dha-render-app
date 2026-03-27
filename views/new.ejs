@@ -1,142 +1,192 @@
-<%- include('partials/header', { title: 'New DHA', heading: 'New Daily Hazard Analysis', subheading: 'Foreman completes this once, then the crew signs from their phones.' }) %>
+<%- include('partials/header', { title: 'New DHA', heading: 'New Daily Hazard Analysis', subheading: 'This version is laid out to mirror the original DHA sheet.' }) %>
 
 <form method="POST" action="/foreman/new">
-  <div class="card">
-    <h2 style="margin-top:0;">Project details</h2>
-    <div class="grid two">
-      <div><label>Project name</label><input type="text" name="projectName" required /></div>
-      <div><label>Project number</label><input type="text" name="projectNumber" /></div>
-      <div><label>Date</label><input type="date" name="date" required /></div>
-      <div><label>Time</label><input type="time" name="time" required /></div>
-      <div><label>Superintendent</label><input type="text" name="superintendent" /></div>
-      <div><label>Foreman</label><input type="text" name="foreman" required /></div>
-      <div><label>Weather</label><input type="text" name="weather" placeholder="Clear, 42°F, windy" /></div>
-      <div><label>Work area location</label><input type="text" name="workAreaLocation" /></div>
-    </div>
-    <div class="grid two" style="margin-top:14px;">
-      <div>
-        <label>Work area surveyed</label>
-        <select name="workAreaSurveyed">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div>
-        <label>JHA reviewed by crew</label>
-        <select name="jhaReviewed">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
+  <div class="paper-toolbar no-print">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="topbar">
+        <div>
+          <div style="font-size:22px;font-weight:800;">PDF-style entry form</div>
+          <div class="muted">Fill this out like the paper sheet. The saved DHA will show in a matching paper-style layout with QR code and crew sign-in.</div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="submit">Save DHA</button>
+          <a class="btn secondary" href="/dashboard">Cancel</a>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <h2 style="margin-top:0;">Daily work plan</h2>
-    <label>Task description</label>
-    <textarea name="taskDescription" required placeholder="Describe today’s work clearly."></textarea>
-    <div class="grid two" style="margin-top:14px;">
-      <div>
-        <label>Coordinated with other trades / public / traffic?</label>
-        <select name="coordinatedWithOthers">
-          <option value="No">No</option>
-          <option value="Yes">Yes</option>
-        </select>
-      </div>
-      <div>
-        <label>Any incidents / near misses to discuss?</label>
-        <select name="incidentsOrNearMisses">
-          <option value="No">No</option>
-          <option value="Yes">Yes</option>
-        </select>
-      </div>
-      <div>
-        <label>Coordination details</label>
-        <textarea name="coordinatedExplanation"></textarea>
-      </div>
-      <div>
-        <label>Incident / near miss details</label>
-        <textarea name="incidentsExplanation"></textarea>
-      </div>
+  <section class="paper">
+    <div class="pdf-header">
+      <div class="ab-logo"><span>AB</span> <span>American<br>Bridge</span></div>
+      <div class="pdf-title">DAILY HAZARD ANALYSIS</div>
+      <div class="jagd-box">JAGD</div>
     </div>
-    <div class="grid two" style="margin-top:14px;">
-      <div>
-        <label>Tools / equipment required</label>
-        <textarea name="toolsEquipment" placeholder="Compressors, blast pot, ladders, MEWP, etc."></textarea>
-      </div>
-      <div>
-        <label>Safety equipment required</label>
-        <textarea name="safetyEquipment" placeholder="Harness, respirator, hard hat, hearing protection, etc."></textarea>
-      </div>
-    </div>
-  </div>
 
-  <div class="card">
-    <h2 style="margin-top:0;">Permits / authorizations / inspections</h2>
-    <div class="checkbox-grid">
-      <% permitOptions.forEach(function(option) { %>
-        <label class="check-item"><input type="checkbox" name="permits" value="<%= option %>" /> <span><%= option %></span></label>
-      <% }) %>
-    </div>
-    <div style="margin-top:12px;"><label>Other permit details</label><input type="text" name="permitsOther" /></div>
-  </div>
+    <table class="pdf-table">
+      <tr>
+        <td colspan="2">
+          <div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><input type="text" name="projectName" placeholder="Project name" required></div></div>
+        </td>
+        <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><input type="date" name="date" required></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><input type="time" name="time" required></div></div></td>
+      </tr>
+      <tr>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Superintendent:</div><div class="cell-value"><input type="text" name="superintendent"></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><input type="text" name="foreman" required></div></div></td>
+        <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><input type="text" name="weather" placeholder="Clear / windy / 48°F"></div></div></td>
+      </tr>
+      <tr>
+        <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Location(s):</div><div class="cell-value"><input type="text" name="workAreaLocation"></div></div></td>
+        <td colspan="2">
+          <div class="cell-line">
+            <div class="cell-label">Work Area Surveyed:</div>
+            <div class="cell-value yesno">
+              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="Yes" checked> Yes</label>
+              <label class="radio-inline"><input type="radio" name="workAreaSurveyed" value="N/A"> N/A</label>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4">
+          <div class="cell-line">
+            <div class="cell-label">Associated JHA Reviewed / Signed by Crew:</div>
+            <div class="cell-value yesno">
+              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="Yes" checked> Yes</label>
+              <label class="radio-inline"><input type="radio" name="jhaReviewed" value="N/A"> N/A</label>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><textarea name="taskDescription" required placeholder="Describe today’s work."></textarea></div></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class="cell-label" style="border-right:0;">Are Others Working Above, Below or Beside Your Work Areas?</div>
+          <div class="cell-value yesno" style="border-top:1px solid var(--line);">
+            <label class="radio-inline"><input type="radio" name="othersWorking" value="Yes"> Yes</label>
+            <label class="radio-inline"><input type="radio" name="othersWorking" value="N/A" checked> N/A</label>
+          </div>
+        </td>
+        <td colspan="2">
+          <div class="cell-label" style="border-right:0;">Have They Been Coordinated / Communicated with?</div>
+          <div class="cell-value yesno" style="border-top:1px solid var(--line);">
+            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="Yes"> Yes</label>
+            <label class="radio-inline"><input type="radio" name="coordinatedWithOthers" value="N/A" checked> N/A</label>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4">
+          <div class="cell-label" style="border-right:0;">Were There Any Reported Incidents or Near Misses Yesterday or Today?</div>
+          <div class="full-line" style="border-top:1px solid var(--line);">
+            <div class="yesno" style="margin-bottom:8px;">
+              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="Yes"> Yes</label>
+              <label class="radio-inline"><input type="radio" name="incidentsOrNearMisses" value="No" checked> No</label>
+              <span style="font-weight:700;">If Yes, Please Explain:</span>
+            </div>
+            <textarea name="incidentsExplanation"></textarea>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><textarea name="toolsEquipment" placeholder="List tools, equipment, and safety gear for today’s task."></textarea></div></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class="section-subbanner">Required Permits/Authorizations/Inspections</div>
+          <div class="full-line">
+            <% permitOptions.forEach(function(option) { %>
+              <label class="check-item"><input type="checkbox" name="permits" value="<%= option %>"> <%= option %></label>
+            <% }) %>
+            <input type="text" name="permitsOther" placeholder="Other permit details">
+          </div>
+        </td>
+        <td colspan="2">
+          <div class="section-subbanner">Specific Training Required</div>
+          <div class="full-line">
+            <% trainingOptions.forEach(function(option) { %>
+              <label class="check-item"><input type="checkbox" name="training" value="<%= option %>"> <%= option %></label>
+            <% }) %>
+            <input type="text" name="trainingOther" placeholder="Other training details">
+          </div>
+        </td>
+      </tr>
+    </table>
 
-  <div class="card">
-    <h2 style="margin-top:0;">Specific training required</h2>
-    <div class="checkbox-grid">
-      <% trainingOptions.forEach(function(option) { %>
-        <label class="check-item"><input type="checkbox" name="training" value="<%= option %>" /> <span><%= option %></span></label>
-      <% }) %>
-    </div>
-    <div style="margin-top:12px;"><label>Other training details</label><input type="text" name="trainingOther" /></div>
-  </div>
-
-  <div class="card">
-    <div class="topbar">
-      <div>
-        <h2 style="margin:0 0 6px 0;">Task steps, hazards, and controls</h2>
-        <p class="muted" style="margin:0;">Add more rows later if you want. This starter begins with 4.</p>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Task step</th>
-            <th>Hazard</th>
-            <th>Control</th>
+    <div class="section-banner">Work Activities</div>
+    <table class="pdf-table">
+      <thead class="work-head">
+        <tr>
+          <th class="yellow">TASK STEPS</th>
+          <th class="red">HAZARDS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
+          <th class="green">CONTROLS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for (let i = 0; i < 8; i++) { %>
+          <tr class="work-row">
+            <td><textarea name="taskStep"></textarea></td>
+            <td><textarea name="hazard"></textarea></td>
+            <td><textarea name="control"></textarea></td>
           </tr>
-        </thead>
-        <tbody>
-          <% for (let i = 0; i < 4; i++) { %>
-            <tr>
-              <td><textarea name="taskStep" placeholder="Set containment"></textarea></td>
-              <td><textarea name="hazard" placeholder="Fall exposure, dropped objects"></textarea></td>
-              <td><textarea name="control" placeholder="Tie-off, debris netting, exclusion zone"></textarea></td>
-            </tr>
-          <% } %>
-        </tbody>
-      </table>
+        <% } %>
+      </tbody>
+    </table>
+
+    <div class="section-banner">CREW SIGN IN</div>
+    <table class="pdf-table">
+      <tr>
+        <th class="section-subbanner">PRINT NAME</th>
+        <th class="section-subbanner">SIGNATURE</th>
+        <th class="section-subbanner">PRINT NAME</th>
+        <th class="section-subbanner">SIGNATURE</th>
+      </tr>
+      <% for (let i = 0; i < 5; i++) { %>
+        <tr class="sign-row"><td></td><td></td><td></td><td></td></tr>
+      <% } %>
+    </table>
+
+    <div class="section-banner">SUPERVISION</div>
+    <table class="pdf-table">
+      <tr>
+        <td>
+          <div class="cell-line"><div class="cell-label">Person Conducting DHA (signature):</div><div class="cell-value"><input type="text" name="foremanSignatureName" placeholder="Type name for now"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="cell-line"><div class="cell-label">Reviewer (signature):</div><div class="cell-value"><input type="text" name="reviewerSignatureName"></div></div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="footer-note">
+      <div>White - Office &nbsp;&nbsp;&nbsp; Yellow - Field Supervision</div>
+      <div><strong>AB-DHA_REV 2</strong> &nbsp; 08-30-2022</div>
+    </div>
+  </section>
+
+  <div class="card helper-card no-print">
+    <div style="font-size:22px;font-weight:800;margin-bottom:12px;">Reference guide from the back page</div>
+    <div class="muted" style="margin-bottom:14px;">This stays on the form so the foreman can quickly copy the same kind of hazard and control language shown on the original PDF.</div>
+
+    <div class="helper-title red">HAZARDS - Examples</div>
+    <div class="reference-grid">
+      <% hazardExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
+    </div>
+
+    <div class="helper-title green">CONTROLS - Examples</div>
+    <div class="reference-grid">
+      <% controlExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
     </div>
   </div>
 
-  <div class="card">
-    <h2 style="margin-top:0;">Foreman signoff</h2>
-    <div class="grid two">
-      <div>
-        <label>Foreman signature name</label>
-        <input type="text" name="foremanSignatureName" placeholder="Type name if you don’t want to capture signature yet" />
-      </div>
-      <div>
-        <label>Foreman signature image (optional base64 for now)</label>
-        <input type="text" name="foremanSignature" placeholder="Can be added later in the next version" />
-      </div>
-    </div>
-  </div>
-
-  <div class="actions" style="margin-bottom:30px;">
-    <button class="btn secondary" type="submit">Save DHA and generate crew QR</button>
-    <a class="btn ghost" href="/dashboard">Cancel</a>
+  <div class="actions no-print" style="margin-top:16px;">
+    <button class="btn primary" type="submit">Save DHA and generate crew QR</button>
+    <a class="btn secondary" href="/dashboard">Cancel</a>
   </div>
 </form>
 

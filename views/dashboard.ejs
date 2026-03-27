@@ -1,20 +1,20 @@
-<%- include('partials/header', { title: 'DHA Dashboard', heading: 'DHA Dashboard', subheading: 'Open, review, and share daily hazard analyses.' }) %>
+<%- include('partials/header', { title: 'DHA Dashboard', heading: 'DHA Dashboard', subheading: 'Paper-style DHA form with QR crew signatures.' }) %>
 
-<div class="card">
+<div class="card no-print">
   <div class="topbar">
     <div>
-      <h2 style="margin:0 0 6px 0;">Recent DHAs</h2>
-      <p class="muted">Each DHA gets a crew sign page and QR code after creation.</p>
+      <div style="font-size:24px;font-weight:800;">Recent DHAs</div>
+      <div class="muted">Create the daily form, then let the crew scan the QR code to sign from the field.</div>
     </div>
-    <a class="btn secondary" href="/foreman/new">Create today’s DHA</a>
+    <a class="btn primary" href="/foreman/new">Create today’s DHA</a>
   </div>
 </div>
 
 <div class="list">
   <% if (!dhas.length) { %>
     <div class="card">
-      <p style="margin:0 0 10px 0; font-weight:700;">No DHAs yet.</p>
-      <p class="muted">Start with the foreman form, then let the crew scan the QR code to sign.</p>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px;">No DHAs yet.</div>
+      <div class="muted">Start with the new foreman form. The saved record will show a paper-style view that matches your PDF much more closely.</div>
     </div>
   <% } %>
 
@@ -22,15 +22,15 @@
     <div class="row-card">
       <div class="topbar">
         <div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:6px;">
-            <span class="badge <%= dha.status === 'completed' ? '' : 'open' %>"><%= dha.status %></span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+            <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
             <span class="small muted"><%= new Date(dha.createdAt).toLocaleString() %></span>
           </div>
-          <h3 style="margin:0 0 6px 0;"><%= dha.projectName || 'Untitled Project' %></h3>
-          <p class="muted" style="margin:0;">Project #<%= dha.projectNumber || '—' %> · Foreman: <%= dha.foreman || '—' %> · Date: <%= dha.date || '—' %></p>
+          <div style="font-size:22px;font-weight:800;"><%= dha.projectName || 'Untitled Project' %></div>
+          <div class="muted">Project / #: <%= dha.projectNumber || '—' %> · Foreman: <%= dha.foreman || '—' %> · Date: <%= dha.date || '—' %></div>
         </div>
         <div class="actions">
-          <a class="btn" href="/dhas/<%= dha.id %>">Open</a>
+          <a class="btn primary" href="/dhas/<%= dha.id %>">Open</a>
         </div>
       </div>
     </div>

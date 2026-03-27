@@ -1,96 +1,176 @@
-<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Share the QR code so the crew can sign from their phones.' }) %>
+<%- include('partials/header', { title: 'DHA Details', heading: dha.projectName || 'DHA Details', subheading: 'Paper-style DHA view with QR crew sign page.' }) %>
 
-<div class="grid two">
-  <div class="card">
-    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
-      <span class="badge <%= dha.status === 'completed' ? '' : 'open' %>"><%= dha.status %></span>
-      <span class="small muted">Created <%= new Date(dha.createdAt).toLocaleString() %></span>
+<div class="card no-print">
+  <div class="topbar">
+    <div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+        <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
+        <span class="small muted">Created <%= new Date(dha.createdAt).toLocaleString() %></span>
+      </div>
+      <div style="font-size:24px;font-weight:800;">Paper-style DHA record</div>
+      <div class="muted">This page is formatted to look much closer to your original PDF. You can also print it.</div>
     </div>
-    <h2 style="margin-top:0;">Project summary</h2>
-    <div class="grid two">
-      <div><strong>Project #</strong><br><span class="muted"><%= dha.projectNumber || '—' %></span></div>
-      <div><strong>Date / Time</strong><br><span class="muted"><%= dha.date || '—' %> <%= dha.time || '' %></span></div>
-      <div><strong>Superintendent</strong><br><span class="muted"><%= dha.superintendent || '—' %></span></div>
-      <div><strong>Foreman</strong><br><span class="muted"><%= dha.foreman || '—' %></span></div>
-      <div><strong>Weather</strong><br><span class="muted"><%= dha.weather || '—' %></span></div>
-      <div><strong>Location</strong><br><span class="muted"><%= dha.workAreaLocation || '—' %></span></div>
-    </div>
-    <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;" />
-    <p><strong>Task description</strong><br><span class="muted"><%= dha.taskDescription || '—' %></span></p>
-    <p><strong>Main hazards</strong><br><span class="muted"><%= summaries.hazardText || '—' %></span></p>
-    <p><strong>Main controls</strong><br><span class="muted"><%= summaries.controlText || '—' %></span></p>
-  </div>
-
-  <div class="card qr">
-    <h2 style="margin-top:0;">Crew sign QR code</h2>
-    <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" style="width:240px;max-width:100%;border-radius:12px;border:1px solid #dbe3ee;" />
-    <p class="muted" style="margin:0;">Workers scan this and sign from their phones.</p>
-    <a class="btn secondary" href="<%= signUrl %>">Open sign page</a>
-    <div class="card" style="width:100%;margin:0; padding:12px; background:#f8fafc;">
-      <div class="small muted" style="word-break:break-all;"><%= signUrl %></div>
+    <div class="actions">
+      <a class="btn secondary" href="<%= signUrl %>">Open crew sign page</a>
+      <button class="btn primary" onclick="window.print()" type="button">Print</button>
+      <% if (dha.status !== 'completed') { %>
+        <form method="POST" action="/dhas/<%= dha.id %>/close" style="display:inline;">
+          <button class="btn danger" type="submit">Mark complete</button>
+        </form>
+      <% } %>
     </div>
   </div>
 </div>
 
-<div class="card">
-  <h2 style="margin-top:0;">Permits and training</h2>
+<div class="card no-print">
   <div class="grid two">
     <div>
-      <strong>Permits</strong>
-      <p class="muted"><%= dha.permits.length ? dha.permits.join(', ') : 'None selected' %></p>
-      <% if (dha.permitsOther) { %><p class="small muted">Other: <%= dha.permitsOther %></p><% } %>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px;">Crew sign QR code</div>
+      <div class="muted">Workers scan this to sign on their phones. Their names and signatures fill into the crew sign-in area below.</div>
+      <div style="margin-top:10px;word-break:break-all;" class="small"><%= signUrl %></div>
     </div>
-    <div>
-      <strong>Training</strong>
-      <p class="muted"><%= dha.training.length ? dha.training.join(', ') : 'None selected' %></p>
-      <% if (dha.trainingOther) { %><p class="small muted">Other: <%= dha.trainingOther %></p><% } %>
+    <div style="text-align:center;">
+      <img src="<%= qrCodeDataUrl %>" alt="Crew sign QR code" style="width:220px;max-width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:10px;">
     </div>
   </div>
 </div>
 
-<div class="card">
-  <h2 style="margin-top:0;">Task rows</h2>
-  <div class="table-wrap">
-    <table class="table">
-      <thead><tr><th>Task step</th><th>Hazard</th><th>Control</th></tr></thead>
-      <tbody>
+<section class="paper print-sheet">
+  <div class="pdf-header">
+    <div class="ab-logo"><span>AB</span> <span>American<br>Bridge</span></div>
+    <div class="pdf-title">DAILY HAZARD ANALYSIS</div>
+    <div class="jagd-box">JAGD</div>
+  </div>
+
+  <table class="pdf-table">
+    <tr>
+      <td colspan="2"><div class="cell-line"><div class="cell-label">Project Name / #:</div><div class="cell-value"><%= dha.projectName || '—' %> <%= dha.projectNumber ? ' / ' + dha.projectNumber : '' %></div></div></td>
+      <td><div class="cell-line"><div class="cell-label">Date:</div><div class="cell-value"><%= dha.date || '—' %></div></div></td>
+      <td><div class="cell-line"><div class="cell-label">Time:</div><div class="cell-value"><%= dha.time || '—' %></div></div></td>
+    </tr>
+    <tr>
+      <td colspan="2"><div class="cell-line"><div class="cell-label">Superintendent:</div><div class="cell-value"><%= dha.superintendent || '—' %></div></div></td>
+      <td><div class="cell-line"><div class="cell-label">Foreman:</div><div class="cell-value"><%= dha.foreman || '—' %></div></div></td>
+      <td><div class="cell-line"><div class="cell-label">Weather:</div><div class="cell-value"><%= dha.weather || '—' %></div></div></td>
+    </tr>
+    <tr>
+      <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Location(s):</div><div class="cell-value"><%= dha.workAreaLocation || '—' %></div></div></td>
+      <td colspan="2"><div class="cell-line"><div class="cell-label">Work Area Surveyed:</div><div class="cell-value"><span class="yesno"><span class="box"><span class="fake-check"><%= dha.workAreaSurveyed === 'Yes' ? '✓' : '' %></span> Yes</span><span class="box"><span class="fake-check"><%= dha.workAreaSurveyed === 'N/A' ? '✓' : '' %></span> N/A</span></span></div></div></td>
+    </tr>
+    <tr>
+      <td colspan="4"><div class="cell-line"><div class="cell-label">Associated JHA Reviewed / Signed by Crew:</div><div class="cell-value"><span class="yesno"><span class="box"><span class="fake-check"><%= dha.jhaReviewed === 'Yes' ? '✓' : '' %></span> Yes</span><span class="box"><span class="fake-check"><%= dha.jhaReviewed === 'N/A' ? '✓' : '' %></span> N/A</span></span></div></div></td>
+    </tr>
+    <tr>
+      <td colspan="4"><div class="cell-label" style="border-right:0;">Task Description:</div><div class="full-line"><%= dha.taskDescription || '—' %></div></td>
+    </tr>
+    <tr>
+      <td colspan="2"><div class="cell-label" style="border-right:0;">Are Others Working Above, Below or Beside Your Work Areas?</div><div class="cell-value" style="border-top:1px solid var(--line);"><span class="yesno"><span class="box"><span class="fake-check"><%= dha.othersWorking === 'Yes' ? '✓' : '' %></span> Yes</span><span class="box"><span class="fake-check"><%= dha.othersWorking === 'N/A' ? '✓' : '' %></span> N/A</span></span></div></td>
+      <td colspan="2"><div class="cell-label" style="border-right:0;">Have They Been Coordinated / Communicated with?</div><div class="cell-value" style="border-top:1px solid var(--line);"><span class="yesno"><span class="box"><span class="fake-check"><%= dha.coordinatedWithOthers === 'Yes' ? '✓' : '' %></span> Yes</span><span class="box"><span class="fake-check"><%= dha.coordinatedWithOthers === 'N/A' ? '✓' : '' %></span> N/A</span></span></div></td>
+    </tr>
+    <tr>
+      <td colspan="4"><div class="cell-label" style="border-right:0;">Were There Any Reported Incidents or Near Misses Yesterday or Today?</div><div class="full-line" style="border-top:1px solid var(--line);"><span class="yesno"><span class="box"><span class="fake-check"><%= dha.incidentsOrNearMisses === 'Yes' ? '✓' : '' %></span> Yes</span><span class="box"><span class="fake-check"><%= dha.incidentsOrNearMisses === 'No' ? '✓' : '' %></span> No</span></span> <strong>If Yes, Please Explain:</strong> <%= dha.incidentsExplanation || '' %></div></td>
+    </tr>
+    <tr>
+      <td colspan="4"><div class="cell-label" style="border-right:0;">Tools, Equipment, Safety Equipment Required to Perform Today’s Task:</div><div class="full-line"><%= dha.toolsEquipment || '—' %></div></td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        <div class="section-subbanner">Required Permits/Authorizations/Inspections</div>
+        <div class="full-line">
+          <% ['Confined Space','Cranes','Environmental','Excavations','Hot Work','MEWP / Forklifts','Tools / Equipment','Traffic / Public Controls','Scaffolds / Ladders','Rigging','Other'].forEach(function(item) { %>
+            <div><span class="fake-check"><%= dha.permits.includes(item) ? '✓' : '' %></span> <%= item %><% if (item === 'Other' && dha.permitsOther) { %>: <%= dha.permitsOther %><% } %></div>
+          <% }) %>
+        </div>
+      </td>
+      <td colspan="2">
+        <div class="section-subbanner">Specific Training Required</div>
+        <div class="full-line">
+          <% ['Confined Space','Crane Operator','Emergency Response','Fall Protection','Flagging','Lift Director','MEWP / Forklifts','Rigging / Signaling','Scaffold','Silica / Lead','Other'].forEach(function(item) { %>
+            <div><span class="fake-check"><%= dha.training.includes(item) ? '✓' : '' %></span> <%= item %><% if (item === 'Other' && dha.trainingOther) { %>: <%= dha.trainingOther %><% } %></div>
+          <% }) %>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="section-banner">Work Activities</div>
+  <table class="pdf-table">
+    <thead class="work-head">
+      <tr>
+        <th class="yellow">TASK STEPS</th>
+        <th class="red">HAZARDS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
+        <th class="green">CONTROLS Associated w/ The Task<br><span class="small">See Examples on Front Cover</span></th>
+      </tr>
+    </thead>
+    <tbody>
       <% dha.taskRows.forEach(function(row) { %>
         <tr>
-          <td><%= row.taskStep || '—' %></td>
-          <td><%= row.hazard || '—' %></td>
-          <td><%= row.control || '—' %></td>
+          <td><div class="work-view"><%= row.taskStep || '' %></div></td>
+          <td><div class="work-view"><%= row.hazard || '' %></div></td>
+          <td><div class="work-view"><%= row.control || '' %></div></td>
         </tr>
       <% }) %>
-      </tbody>
-    </table>
-  </div>
-</div>
+    </tbody>
+  </table>
 
-<div class="card">
-  <div class="topbar">
-    <h2 style="margin:0;">Crew signatures (<%= dha.crewSignatures.length %>)</h2>
-    <% if (dha.status !== 'completed') { %>
-      <form method="POST" action="/dhas/<%= dha.id %>/close">
-        <button class="btn danger" type="submit">Mark complete</button>
-      </form>
+  <div class="section-banner">CREW SIGN IN</div>
+  <table class="pdf-table">
+    <tr>
+      <th class="section-subbanner">PRINT NAME</th>
+      <th class="section-subbanner">SIGNATURE</th>
+      <th class="section-subbanner">PRINT NAME</th>
+      <th class="section-subbanner">SIGNATURE</th>
+    </tr>
+    <% for (let i = 0; i < 5; i++) { %>
+      <tr class="sign-row">
+        <td><div class="sign-name"><%= crewGrid.left[i].signerName || '' %></div></td>
+        <td><% if (crewGrid.left[i].signatureData) { %><img class="sig-image" src="<%= crewGrid.left[i].signatureData %>" alt="Signature"><% } %></td>
+        <td><div class="sign-name"><%= crewGrid.right[i].signerName || '' %></div></td>
+        <td><% if (crewGrid.right[i].signatureData) { %><img class="sig-image" src="<%= crewGrid.right[i].signatureData %>" alt="Signature"><% } %></td>
+      </tr>
     <% } %>
+  </table>
+
+  <div class="section-banner">SUPERVISION</div>
+  <table class="pdf-table">
+    <tr><td><div class="cell-line"><div class="cell-label">Person Conducting DHA (signature):</div><div class="cell-value"><%= dha.foremanSignatureName || dha.foreman || '' %></div></div></td></tr>
+    <tr><td><div class="cell-line"><div class="cell-label">Reviewer (signature):</div><div class="cell-value"><%= dha.reviewerSignatureName || '' %></div></div></td></tr>
+  </table>
+
+  <div class="footer-note">
+    <div>White - Office &nbsp;&nbsp;&nbsp; Yellow - Field Supervision</div>
+    <div><strong>AB-DHA_REV 2</strong> &nbsp; 08-30-2022</div>
   </div>
-  <div class="list" style="margin-top:12px;">
-    <% if (!dha.crewSignatures.length) { %>
-      <div class="row-card"><p class="muted" style="margin:0;">No signatures yet.</p></div>
-    <% } %>
-    <% dha.crewSignatures.forEach(function(sig) { %>
-      <div class="row-card">
-        <div class="topbar">
-          <div>
-            <strong><%= sig.signerName %></strong>
-            <div class="small muted"><%= sig.role %> · <%= new Date(sig.signedAt).toLocaleString() %></div>
-          </div>
-        </div>
-        <img src="<%= sig.signatureData %>" alt="Signature for <%= sig.signerName %>" style="margin-top:12px; max-width:260px; width:100%; background:#fff; border:1px solid #dbe3ee; border-radius:12px;" />
-      </div>
-    <% }) %>
+</section>
+
+<section class="ref-page page-break print-sheet">
+  <div class="ref-logo">
+    <span class="circle">AB</span>
+    <span>American<br>Bridge</span>
   </div>
-</div>
+  <div class="ref-title">DHA Abridged Instructions</div>
+  <div class="ref-list">
+    <ol>
+      <li>Foremen, along with their crews, are required to complete a DHA daily prior to the start of work.</li>
+      <li>An examination of the work area(s) must be completed prior to preparing the DHA to identify any circumstances that may present a hazard.</li>
+      <li>The applicable JHA should be referenced to help identify hazards relevant to the task(s) of the day.</li>
+      <li>Each crew’s DHA must be signed by all personnel on the crew, posted in (or nearby) the work area, and available for review.</li>
+      <li>Once completed, the copy of the DHA must be submitted to Project Management.</li>
+      <li>The DHA Must Be Periodically Reviewed by Project Supervision.</li>
+    </ol>
+  </div>
+
+  <div class="helper-title red">HAZARDS - Examples</div>
+  <div class="reference-grid">
+    <% hazardExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
+  </div>
+
+  <div class="helper-title green" style="margin-top:22px;">CONTROLS - Examples</div>
+  <div class="reference-grid">
+    <% controlExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
+  </div>
+
+  <div class="ref-footer">ABridge to SAFETY excellence</div>
+</section>
 
 <%- include('partials/footer') %>
