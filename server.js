@@ -165,17 +165,19 @@ function buildHazardSummary(rows) {
 }
 
 function buildCrewGrid(signatures) {
+  const minimumRows = 5;
+  const rowCount = Math.max(minimumRows, Math.ceil(signatures.length / 2));
   const padded = [...signatures];
-  while (padded.length < 10) {
+  while (padded.length < rowCount * 2) {
     padded.push({ signerName: '', signatureData: '', signedAt: '' });
   }
   const left = [];
   const right = [];
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < rowCount; i += 1) {
     left.push(padded[i]);
-    right.push(padded[i + 5]);
+    right.push(padded[i + rowCount]);
   }
-  return { left, right };
+  return { left, right, rowCount };
 }
 
 function isRenderableBaseUrl(value) {
@@ -261,6 +263,74 @@ function findTodayDha(db) {
   return db.dhas.find((item) => item.date === today && item.projectName === defaultDhaTemplate.projectName && item.foreman === defaultDhaTemplate.foreman && item.status !== 'completed');
 }
 
+function buildPrintableFileName(dha) {
+  const projectBits = [dha.projectName, dha.projectNumber].filter(Boolean).join(' ').trim() || 'DHA';
+  const safeProject = projectBits.replace(/[^\w\- ]+/g, '').replace(/\s+/g, ' ').trim();
+  return `American Bridge DHA ${safeProject} ${dha.date || getTodayDateString()}`.trim();
+}
+
+async function lookupWeather(lat, lon) {
+  const latStr = String(lat);
+  const lonStr = String(lon);
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(latStr)}&longitude=${encodeURIComponent(lonStr)}&current=temperature_2m,wind_speed_10m,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+  const weatherResp = await fetch(weatherUrl);
+  if (!weatherResp.ok) throw new Error('Weather lookup failed');
+  const weatherData = await weatherResp.json();
+  const current = weatherData.current || {};
+
+  let locationLabel = '';
+  try {
+    const reverseUrl = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(latStr)}&longitude=${encodeURIComponent(lonStr)}&language=en&format=json`;
+    const reverseResp = await fetch(reverseUrl);
+    if (reverseResp.ok) {
+      const reverseData = await reverseResp.json();
+      const place = (reverseData.results || [])[0];
+      if (place) {
+        locationLabel = [place.name, place.admin1].filter(Boolean).join(', ');
+      }
+    }
+  } catch (error) {
+    // Non-blocking. Weather can still populate without the place name.
+  }
+
+  const codeMap = {
+    0: 'Clear',
+    1: 'Mainly clear',
+    2: 'Partly cloudy',
+    3: 'Overcast',
+    45: 'Fog',
+    48: 'Fog',
+    51: 'Light drizzle',
+    53: 'Drizzle',
+    55: 'Heavy drizzle',
+    56: 'Freezing drizzle',
+    57: 'Freezing drizzle',
+    61: 'Light rain',
+    63: 'Rain',
+    65: 'Heavy rain',
+    66: 'Freezing rain',
+    67: 'Freezing rain',
+    71: 'Light snow',
+    73: 'Snow',
+    75: 'Heavy snow',
+    77: 'Snow grains',
+    80: 'Rain showers',
+    81: 'Rain showers',
+    82: 'Heavy showers',
+    85: 'Snow showers',
+    86: 'Heavy snow showers',
+    95: 'Thunderstorm',
+    96: 'Thunderstorm / hail',
+    99: 'Thunderstorm / hail'
+  };
+
+  const condition = codeMap[current.weather_code] || 'Weather check';
+  const temp = current.temperature_2m != null ? `${Math.round(current.temperature_2m)}°F` : '';
+  const wind = current.wind_speed_10m != null ? `${Math.round(current.wind_speed_10m)} mph wind` : '';
+  const pieces = [locationLabel, condition, temp, wind].filter(Boolean);
+  return pieces.join(' / ');
+}
+
 app.get('/', (req, res) => res.redirect('/foreman/start-today'));
 
 app.get('/dashboard', (req, res) => {
@@ -270,9 +340,10 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/foreman/start-today', (req, res) => {
-  const db = readDb();
-  const existing = findTodayDha(db);
-  res.render('start-today', { existing });
+  res.render('start', {
+    heading: 'RK19-A',
+    subheading: 'Tap Start Today’s DHA. The app will create the day’s Safespan DHA, pull weather if available, and show the live QR/signature page.'
+  });
 });
 
 app.post('/foreman/start-today', (req, res) => {
@@ -280,20 +351,30 @@ app.post('/foreman/start-today', (req, res) => {
   const existing = findTodayDha(db);
   if (existing) return res.redirect(`/dhas/${existing.id}`);
 
-  const payload = {
-    weather: req.body.weather || '',
-    workAreaLocation: req.body.workAreaLocation || defaultDhaTemplate.workAreaLocation
-  };
+  const weather = (req.body.weather || '').trim();
+  const dha = createDhaRecord({
+    weather
+  });
 
-  const dha = createDhaRecord(payload);
   db.dhas.push(dha);
   writeDb(db);
   res.redirect(`/dhas/${dha.id}`);
 });
 
+app.get('/api/weather', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ ok: false, message: 'lat and lon are required' });
+    const weather = await lookupWeather(lat, lon);
+    return res.json({ ok: true, weather });
+  } catch (error) {
+    return res.status(500).json({ ok: false, message: 'Unable to load weather' });
+  }
+});
+
 app.get('/foreman/new', (req, res) => {
   const defaults = makeDefaultDha();
-  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults });
+  res.render('new', { permitOptions, trainingOptions, hazardExamples, controlExamples, defaults, defaultCrewCount: DEFAULT_CREW_COUNT });
 });
 
 app.post('/foreman/new', (req, res) => {
@@ -342,6 +423,8 @@ app.get('/dhas/:id', async (req, res) => {
   const summaries = buildHazardSummary(dha.taskRows || []);
   const crewGrid = buildCrewGrid(dha.crewSignatures || []);
   const progress = getSignatureProgress(dha);
+  const printMode = req.query.print === '1';
+  const pdfFileName = buildPrintableFileName(dha);
 
   res.render('show', {
     dha,
@@ -352,7 +435,23 @@ app.get('/dhas/:id', async (req, res) => {
     hazardExamples,
     controlExamples,
     progress,
-    printMode: req.query.print === '1'
+    printMode,
+    pdfFileName
+  });
+});
+
+app.get('/dhas/:id/signatures.json', (req, res) => {
+  const db = readDb();
+  const dha = db.dhas.find((item) => item.id === req.params.id);
+  if (!dha) return res.status(404).json({ ok: false, message: 'DHA not found' });
+
+  const progress = getSignatureProgress(dha);
+  const crewGrid = buildCrewGrid(dha.crewSignatures || []);
+  res.json({
+    ok: true,
+    progress,
+    signatures: dha.crewSignatures || [],
+    crewGrid
   });
 });
 
@@ -400,16 +499,6 @@ app.post('/sign/:token', (req, res) => {
 
   writeDb(db);
   res.render('sign-success', { dha, signerName, progress: updatedProgress });
-});
-
-app.post('/dhas/:id/close', (req, res) => {
-  const db = readDb();
-  const dha = db.dhas.find((item) => item.id === req.params.id);
-  if (!dha) return res.status(404).send('DHA not found');
-  dha.status = 'completed';
-  dha.closedAt = new Date().toISOString();
-  writeDb(db);
-  res.redirect(`/dhas/${dha.id}`);
 });
 
 app.listen(PORT, () => {

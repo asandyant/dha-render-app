@@ -1,0 +1,77 @@
+<%- include('partials/header', { title: 'Start Today\'s DHA', heading: heading, subheading: subheading, showHeaderActions: false }) %>
+
+<div class="card no-print start-card">
+  <div class="start-inner">
+    <div>
+      <div style="font-size:34px;font-weight:800;margin-bottom:8px;">Start Today’s DHA</div>
+      <div class="muted" style="max-width:760px;">This creates today’s Safespan DHA with your saved defaults, pulls weather when available, and then opens the live page with the QR code and signature list.</div>
+      <div id="weather-status" class="small muted" style="margin-top:12px;">Checking weather when you press Start.</div>
+    </div>
+    <form id="start-form" method="POST" action="/foreman/start-today">
+      <input type="hidden" name="weather" id="weather-input" value="">
+      <button type="submit" class="btn primary start-btn" id="start-btn">Start Today’s DHA</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const form = document.getElementById('start-form');
+    const weatherInput = document.getElementById('weather-input');
+    const weatherStatus = document.getElementById('weather-status');
+    const startBtn = document.getElementById('start-btn');
+
+    async function getWeatherFromBrowser() {
+      if (!('geolocation' in navigator)) {
+        weatherStatus.textContent = 'This browser does not support location. Starting without weather.';
+        return '';
+      }
+
+      weatherStatus.textContent = 'Getting location for weather…';
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 8000,
+          maximumAge: 10 * 60 * 1000
+        });
+      });
+
+      const params = new URLSearchParams({
+        lat: position.coords.latitude,
+        lon: position.coords.longitude
+      });
+
+      weatherStatus.textContent = 'Loading weather…';
+      const response = await fetch('/api/weather?' + params.toString());
+      if (!response.ok) throw new Error('Weather request failed');
+
+      const data = await response.json();
+      const weather = data && data.weather ? data.weather : '';
+      if (weather) {
+        weatherStatus.textContent = 'Weather loaded: ' + weather;
+      } else {
+        weatherStatus.textContent = 'Weather unavailable. Starting anyway.';
+      }
+      return weather;
+    }
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      startBtn.disabled = true;
+      startBtn.textContent = 'Starting…';
+
+      try {
+        const weather = await getWeatherFromBrowser();
+        weatherInput.value = weather || '';
+      } catch (error) {
+        weatherStatus.textContent = 'Could not auto-fill weather. Starting anyway.';
+        weatherInput.value = '';
+      }
+
+      form.submit();
+    });
+  })();
+</script>
+
+<%- include('partials/footer') %>

@@ -1,18 +1,19 @@
-<%- include('partials/header', { title: "Today's DHA", heading: "RK19-A", subheading: "Show the QR code, watch signatures come in, then save the finished DHA as a PDF.", showDashboard: false, showStart: false }) %>
+<%- include('partials/header', { title: printMode ? (pdfFileName + '.pdf') : "Today's DHA", heading: "RK19-A", subheading: printMode ? '' : "Start today, show the QR code, watch signatures come in, then save the finished DHA as a PDF.", showHeaderActions: !printMode }) %>
 
 <div class="card no-print">
   <div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;">
     <div style="flex:1;min-width:280px;">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
         <span class="status-pill <%= dha.status === 'completed' ? 'completed' : '' %>"><%= dha.status %></span>
-        <span class="count-pill"><%= progress.progressText %></span>
+        <span class="count-pill js-progress-text"><%= progress.progressText %></span>
+        <span class="small muted auto-sync-status">Auto-sync on</span>
       </div>
       <div style="font-size:30px;font-weight:800;">Today's Safespan DHA</div>
-      <div class="muted" style="margin-top:8px;max-width:760px;">Shane stays on this page while the crew signs. Each worker signature drops into the crew sign-in section on the DHA form below.</div>
+      <div class="muted" style="margin-top:8px;max-width:760px;">Shane can stay on this page while the crew signs. Each worker signature drops into the crew sign-in section on the DHA form below.</div>
 
       <div class="actions" style="margin-top:18px;">
         <a class="btn secondary" href="/dhas/<%= dha.id %>">Refresh Signatures</a>
-        <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf">Save as PDF</a>
+        <a class="btn secondary" href="/dhas/<%= dha.id %>/pdf" target="_blank" rel="noopener">Save as PDF</a>
       </div>
     </div>
 
@@ -32,10 +33,11 @@
   <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
     <div>
       <div style="font-size:22px;font-weight:800;margin-bottom:8px;">Signed worker list</div>
-      <div class="muted">This updates as the crew signs. There is no fixed cap, so it just keeps counting signed workers.</div>
+      <div class="muted">This updates automatically as the crew signs.</div>
     </div>
-    <div class="count-pill"><%= progress.progressText %></div>
+    <div class="count-pill js-progress-text"><%= progress.progressText %></div>
   </div>
+  <div id="signed-list">
   <% if (!(dha.crewSignatures || []).length) { %>
     <div class="muted" style="margin-top:12px;">No workers have signed yet.</div>
   <% } else { %>
@@ -48,6 +50,7 @@
       <% }) %>
     </div>
   <% } %>
+  </div>
 </div>
 
 <section class="paper print-sheet">
@@ -136,7 +139,8 @@
       <th class="section-subbanner">PRINT NAME</th>
       <th class="section-subbanner">SIGNATURE</th>
     </tr>
-    <% for (let i = 0; i < 5; i++) { %>
+    <tbody id="crew-grid-body">
+    <% for (let i = 0; i < crewGrid.rowCount; i++) { %>
       <tr class="sign-row">
         <td><div class="sign-name"><%= crewGrid.left[i].signerName || '' %></div></td>
         <td><% if (crewGrid.left[i].signatureData) { %><img class="sig-image" src="<%= crewGrid.left[i].signatureData %>" alt="Signature"><% } %></td>
@@ -144,6 +148,7 @@
         <td><% if (crewGrid.right[i].signatureData) { %><img class="sig-image" src="<%= crewGrid.right[i].signatureData %>" alt="Signature"><% } %></td>
       </tr>
     <% } %>
+    </tbody>
   </table>
 
   <div class="section-banner">SUPERVISION</div>
@@ -180,18 +185,76 @@
     <% hazardExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
   </div>
 
-  <div class="helper-title green" style="margin-top:22px;">CONTROLS - Examples</div>
-  <div class="reference-grid">
-    <% controlExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
+  <div class="helper-card">
+    <div class="helper-title green">CONTROLS - Examples</div>
+    <div class="reference-grid">
+      <% controlExamples.forEach(function(item) { %><div><%= item %></div><% }) %>
+    </div>
   </div>
 
-  <div class="ref-footer">ABridge to SAFETY excellence</div>
+  <div class="ref-footer">AB-DHA_REV 2 &nbsp; 08-30-2022</div>
 </section>
 
-<% if (printMode) { %>
+<% if (!printMode) { %>
+<script>
+  (function () {
+    const progressEls = Array.from(document.querySelectorAll('.js-progress-text'));
+    const signedList = document.getElementById('signed-list');
+    const crewGridBody = document.getElementById('crew-grid-body');
+    const syncStatus = document.querySelector('.auto-sync-status');
+
+    function esc(text) {
+      return String(text || '').replace(/[&<>"']/g, function (char) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+      });
+    }
+
+    function renderSignatures(signatures) {
+      if (!signatures.length) {
+        signedList.innerHTML = '<div class="muted" style="margin-top:12px;">No workers have signed yet.</div>';
+        return;
+      }
+      signedList.innerHTML = '<div class="signed-list">' + signatures.map(function (signature, index) {
+        const signedAt = signature.signedAt ? new Date(signature.signedAt).toLocaleString() : '';
+        return '<div class="signed-item"><div><strong>' + (index + 1) + '. ' + esc(signature.signerName) + '</strong> <span class="muted">· ' + esc(signature.role || 'Crew Member') + '</span></div><div class="small muted">' + esc(signedAt) + '</div></div>';
+      }).join('') + '</div>';
+    }
+
+    function renderCrewGrid(crewGrid) {
+      if (!crewGrid || !crewGrid.left || !crewGrid.right) return;
+      crewGridBody.innerHTML = crewGrid.left.map(function (leftItem, index) {
+        const rightItem = crewGrid.right[index] || {};
+        return '<tr class="sign-row">' +
+          '<td><div class="sign-name">' + esc(leftItem.signerName || '') + '</div></td>' +
+          '<td>' + (leftItem.signatureData ? '<img class="sig-image" src="' + leftItem.signatureData + '" alt="Signature">' : '') + '</td>' +
+          '<td><div class="sign-name">' + esc(rightItem.signerName || '') + '</div></td>' +
+          '<td>' + (rightItem.signatureData ? '<img class="sig-image" src="' + rightItem.signatureData + '" alt="Signature">' : '') + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    async function refreshSignatures() {
+      try {
+        const response = await fetch('/dhas/<%= dha.id %>/signatures.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Refresh failed');
+        const data = await response.json();
+        progressEls.forEach(function (el) { el.textContent = data.progress.progressText; });
+        renderSignatures(data.signatures || []);
+        renderCrewGrid(data.crewGrid);
+        if (syncStatus) syncStatus.textContent = 'Auto-sync on';
+      } catch (error) {
+        if (syncStatus) syncStatus.textContent = 'Auto-sync paused';
+      }
+    }
+
+    setInterval(refreshSignatures, 5000);
+  })();
+</script>
+<% } else { %>
 <script>
   window.addEventListener('load', function () {
-    setTimeout(function () { window.print(); }, 250);
+    document.title = "<%= pdfFileName %>.pdf";
+    setTimeout(function () { window.print(); }, 300);
   });
 </script>
 <% } %>

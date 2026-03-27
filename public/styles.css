@@ -228,33 +228,94 @@ label.field-label { display: block; font-weight: 700; margin-bottom: 6px; }
 .qr-image { width: 220px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; padding: 10px; }
 
 
-.hero-card {
-  padding: 28px;
-}
-.start-panel {
-  width: min(420px, 100%);
-  margin: 18px auto 4px;
-  text-align: center;
-}
-.big-start {
-  min-height: 64px;
-  width: 100%;
-  font-size: 24px;
+.qr-panel {
+  width: min(320px, 100%);
+  background: #f8fafc;
+  border: 1px solid #cfd8e3;
   border-radius: 18px;
+  padding: 18px;
 }
-.notice {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+.qr-image {
+  display: block;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #d0d7e2;
   border-radius: 12px;
-  padding: 12px 14px;
+}
+.signed-list { display: grid; gap: 10px; margin-top: 14px; }
+.signed-item {
+  border: 1px solid #d7dde8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+.start-card {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.start-inner {
+  width: min(820px, 100%);
+  text-align: center;
+  display: grid;
+  gap: 18px;
+}
+.start-btn {
+  min-width: 240px;
+  min-height: 56px;
+  font-size: 20px;
+}
+.auto-sync-status {
+  background: #ecfdf5;
+  color: #065f46;
+  border-radius: 999px;
+  padding: 5px 10px;
   font-weight: 700;
 }
-@media (max-width: 800px) {
-  .hero-card {
-    padding: 20px;
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0.35in;
   }
-  .big-start {
-    font-size: 20px;
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  body {
+    background: #fff !important;
+  }
+  .pdf-table {
+    table-layout: fixed;
+  }
+  .pdf-table td, .pdf-table th {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .cell-label, .cell-value, .full-line, .work-view, .sign-name {
+    line-height: 1.25 !important;
+  }
+  .section-banner,
+  .section-subbanner,
+  .work-head .yellow,
+  .work-head .red,
+  .work-head .green,
+  .helper-title.red,
+  .helper-title.green {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .pdf-header, .pdf-table, .section-banner, .footer-note, .ref-page, .reference-grid, .helper-title {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .sig-image {
+    max-height: 28px;
   }
 }
